@@ -10,9 +10,9 @@ Data types are aimed to be as basic as possible while still providing enough fun
 
 ## Integers
 
-An unsigned integer of $2^n$ bits is initialised as `<n>name`. For example, `5orange` would initialise a variable called `orange` which is a $2^5=32$-bit unsigned integer.
+An unsigned integer of 2<sup>n</sup> bits is initialised as `<n>name`. For example, `5orange` would initialise a variable called `orange` which is a 2<sup>5</sup> = 32-bit unsigned integer.
 
-$n$ is an integer that ranges from 0-8 (both inclusive), which means we can have variables that range from being 1-bit to 256-bit.
+`n` is an integer that ranges from 0-8 (both inclusive), which means we can have variables that range from being 1-bit to 256-bit.
 
 ```lua
 0bit            --  1-bit uint
@@ -38,12 +38,13 @@ This can be done recursively to create multidimensional arrays.
 
 `[10][10]3guavas` is a 10 by 10 matrix of bytes.
 
-The following sections introduce more things to the start of the initialisation. We'll refer to what comes before the variable name in an initialisation as the "initialisation expression" from now (or `initexp` for short).
-Eg. The `initexp` for `[4][5]6mangoes` is `[4][5]6`.
+
+
+*The following sections introduce more things to the start of the initialisation. We'll refer to what comes before the variable name in an initialisation as the "initialisation expression" from now (or `initexp` for short). Eg. The `initexp` for `[4][5]6mangoes` is `[4][5]6`.*
 
 ## Variable Length Arrays (or as I like to call them: "varrs")
 
-The length of arrays can't be changed. To make it changeable, you need to initialise it as a varr instead. This is done by replacing a squared number with a digit $v$ from 0-8 (`[10]6apples` would become `26apples`). The length of the varr is represented as a $2^v$-bit integer.
+The length of arrays can't be changed. To make it changeable, you need to initialise it as a varr instead. This is done by replacing a squared number with a digit `v` from 0-8 (`[10]6apples` would become `26apples`). The length of the varr is represented as a 2<sup>v</sup>-bit integer.
 
 The length is changed by adding a number enclosed in square brackets before the variable name. So, if `apples` is initialised as `26apples`, you'd make it 10 long with:
 
@@ -51,7 +52,7 @@ The length is changed by adding a number enclosed in square brackets before the 
 [10]apples
 ```
 
-Since the length can be represented as a $2^v$-bit integer, we can use an integer variable initialised as `<v>name` in the brackets. So if `2boxes` was initialised, the length of `apples` can be set to `boxes` like so:
+Since the length can be represented as a 2<sup>v</sup>-bit integer, we can use an integer variable initialised as `<v>name` in the brackets. So if `2boxes` was initialised, the length of `apples` can be set to `boxes` like so:
 
 ```lua
 [boxes]apples
