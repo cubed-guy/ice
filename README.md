@@ -38,8 +38,6 @@ This can be done recursively to create multidimensional arrays.
 
 `[10][10]3guavas` is a 10 by 10 matrix of bytes.
 
-
-
 *The following sections introduce more things to the start of the initialisation. We'll refer to what comes before the variable name in an initialisation as the "initialisation expression" from now (or `initexp` for short). Eg. The `initexp` for `[4][5]6mangoes` is `[4][5]6`.*
 
 ## Variable Length Arrays (or as I like to call them: "varrs")
