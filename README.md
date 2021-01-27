@@ -70,7 +70,7 @@ Full pointers associate the `declexp` to the pointed data. The data that is bein
 
 A full pointer is declared with `*` in the `declexp`. A pointer to `[10][10]3guavas` will be `*[10][10]3guavaPointer`. It can also be declared like a varr. Thus, a pointer to `[10][10]3guavas` can also be `*223guavarrPointer`.
 
-A full pointer declared like a varr is actually a varr itself. This means that a full pointer pointing to an array _is_ a varr, and the `initexps` `223` and `*223` mean the same thing.
+A full pointer declared like a varr is actually a varr itself. This means that a full pointer pointing to an array _is_ a varr, and the `declexps` `223` and `*223` mean the same thing.
 
 # Functions
 
