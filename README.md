@@ -1,68 +1,79 @@
-# README
+# Intro? Preface? Disclaimer? idk
 
-## Variables
+This language/readme doesn't focus on making things easy for beginners. If it ends up being, then good, but it isn't a priority.
 
-### Integers
+The aim is ease of programming. Here's the idea of what _could_ make it easier. We'll find out if it actually makes it easier once it's done.
 
-A variable is an unsigned integer of $2^n$ bits and initialised as `<n>name`.
+# Variables
 
-So, for example to initialise a 32-bit integer variable called `orange`, you'd type `5orange`, since $2^5=32$.
+Data types are aimed to be as basic as possible while still providing enough functionality to be Turing complete and not too obscure to be usable.
 
-This $n$ is an integer that ranges from 0-8 (both inclusive) which means we can have variables that range from being 1-bit to 256-bit.
+## Integers
+
+An unsigned integer of $2^n$ bits is initialised as `<n>name`. For example, `5orange` would initialise a variable called `orange` which is a $2^5=32$-bit unsigned integer.
+
+$n$ is an integer that ranges from 0-8 (both inclusive), which means we can have variables that range from being 1-bit to 256-bit.
 
 ```lua
-0bit
-1crumb
-2nibble
-3byte
-4word
-5dword
-6qword
-7sixteenBytes
-8thirty2Bytes
+0bit            --  1-bit uint
+1crumb          --  2-bit uint
+2nibble         --  4-bit uint
+3byte           --  8-bit uint
+4word           -- 16-bit uint
+5dword          -- 32-bit uint
+6qword          -- 64-bit uint
+7sixteenBytes   --128-bit uint
+8thirty2Bytes   --256-bit uint
 ```
 
-Since the initialisation has no spaces, the delimiter to differentiate initialisations is whitespace. You can initialise multiple variables of different sizes in the same line.
+Since the initialisation has no spaces, any whitespace acts as a delimiter and you can initialise multiple variables of different sizes in the same line.
 
-### Arrays
+## Arrays
 
 Adding a number enclosed in square brackets to the start of the initialisation creates an array of that length.
 
-So, `[10]6apples` creates an array called `apples` with 10 elements in it, and each element is a 64-bit integer.
+So, `[10]6apples` creates an array called `appleBoxes` with 10 elements in it, and each element is a 64-bit integer.
 
 This can be done recursively to create multidimensional arrays.
 
 `[10][10]3guavas` is a 10 by 10 matrix of bytes.
 
-### Variable Length Arrays (or as I like to call them: "varrs")
+The following sections introduce more things to the start of the initialisation. We'll refer to what comes before the variable name in an initialisation as the "initialisation expression" from now (or `initexp` for short).
+Eg. The `initexp` for `[4][5]6mangoes` is `[4][5]6`.
 
-The length of arrays can't be changed. To make it changeable, you need to initialise it differently to make a varr instead. This is done by replacing a squared number with a digit $v$ from 0-8. (`[10][10]3guavas` would become `223guavas` or `2[10]3guavas` or `[10]23guavas`, based on what is required)
+## Variable Length Arrays (or as I like to call them: "varrs")
 
-$v$ represents how many bits is required to represent the length of the varr. `3` means $2^3=8$ bits to represent the length, `2` means $2^2=4$. (just like integer initialisations)
+The length of arrays can't be changed. To make it changeable, you need to initialise it as a varr instead. This is done by replacing a squared number with a digit $v$ from 0-8 (`[10]6apples` would become `26apples`). The length of the varr is represented as a $2^v$-bit integer.
 
-The syntax to change the length is to add a number enclosed in square brackets before the variable name. (like initialising an array)
-
-So, if `guavas` is initialised as `2[10]3guavas`, you'd make it a 10 by 10 matrix with the following:
+The length is changed by adding a number enclosed in square brackets before the variable name. So, if `apples` is initialised as `26apples`, you'd make it 10 long with:
 
 ```lua
-[10]guavas
+[10]apples
 ```
 
-Here, the length should be capable of being represented with $2^2=4$ bits as `guavas` was initialised with $v=2$.
-
-The length can be any expression that can be represented in $2^v$.
-
-So if `peach` is initialised as `2peach`, we can change the length of `guavas` to `peach` like so:
+Since the length can be represented as a $2^v$-bit integer, we can use an integer variable initialised as `<v>name` in the brackets. So if `2boxes` was initialised, the length of `apples` can be set to `boxes` like so:
 
 ```lua
-[peach]guavas
+[boxes]apples
 ```
 
 Varrs are dynamically allocated, and every time the length is changed, it is first deallocated and then reallocated to fit the new requested memory.
 
-This means that changing the length of a varr will erase its contents. So, to keep the old contents you would store it elsewhere first.
+This means that changing the length of a varr will erase its contents, so to keep the old contents you would store it elsewhere first.
 
-## Functions
+## Pointers
 
-## Labels
+There are two types of pointers - full pointers and size pointers.
+
+### Full Pointer
+
+Full pointers associate the `initexp` to the pointed data. The data that is being pointed to will be treated the same as regular data with that `initexp`.
+
+A full pointer is initialised with `*` in the `initexp`. A pointer to `[10][10]3guavas` will be `*[10][10]3guavaPointer`. It can also be initialised like a varr. Thus, a pointer to `[10][10]3guavas` can also be `*223guavarrPointer`.
+
+A full pointer initialised like a varr is actually a varr itself. This means that a full pointer pointing to an array _is_ a varr, and the `initexps` `223` and `*223` mean the same thing.
+
+# Functions
+
+# Labels
 
