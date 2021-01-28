@@ -3,9 +3,11 @@
 
 ''' ----------------------------INITIALISATION---------------------------- '''
 from sys import argv
-if   len(argv) <2: raise ValueError('Input file not specified')
-elif len(argv)==2: argv.append('a.pasm')
-infile  = open(argv[1])
+# if   len(argv) <2: raise ValueError('Input file not specified')
+# elif len(argv)==2: argv.append('a.pasm')
+if len(argv)==1: argv.extend(['', 'a.pasm'])
+# infile  = open(argv[1])
+infile  = open('Example.lua')
 outfile = open(argv[2], 'w')
 # argv[0] is the path of this python file
 
@@ -33,6 +35,7 @@ import re
 
 word_re = r'[\w_][\w\d_]*'
 word_pattern = re.compile(word_re)
+space_pattern = re.compile(r'\s*')
 
 # Pass 1
 unit_re = r'[0-8]'	# will add tuples later
@@ -66,6 +69,8 @@ indent_stack = []
 expect_indent = False
 
 for line_no, line in enumerate(infile, 1):
+	if blank_pattern.match(line): continue
+
 	# INDENTATION
 	curr_indent = space_pattern.match(line)[0]
 	if curr_indent != ''.join(indent_stack):
@@ -74,29 +79,32 @@ for line_no, line in enumerate(infile, 1):
 	    if indent_diff.startswith(indent):	# consistent indentation so far
 	      indent_diff = indent_diff[len(indent):]
 	    elif indent_diff:
-	      raise TabError('inconsistent use of tabs and spaces.')
+	      raise TabError(f'inconsistent use of tabs and spaces at line {line_no}')
 	    else: break	# dedent
 	  # indent if indent_diff else dedent (if exhausted)
 	  if indent_diff: indent_stack.append(indent_diff); level_diff = 1
-	  else: level_diff = len(indent_stack)-level; del indent_stack[level:]
+	  else: level_diff = level-len(indent_stack); del indent_stack[level:]
+	else: level_diff = 0
+	level = len(indent_stack)
 
 	if expect_indent and level_diff <= 0:
-		raise IndentationError('expected indent block.')
+		raise IndentationError(f'expected indent block at line {line_no}')
 	elif not expect_indent and level_diff > 0:
-		raise IndentationError('unexpected indent block.')
-	expect_indent = bool(blank_pattern.match(line.partition(':')[2]))
+		raise IndentationError(f'unexpected indent block at line {line_no}')
+	expect_indent = not bool(blank_pattern.match(line.partition(':')[2]))
 
 	if level_diff < 0:	# if dedent
-		level = len(indent_stack)
 		if not level: head_func = head_label = ''
 		elif head_label and level == 1: head_func = ''
 
+	# UPDATE DICT
 	if   decl:=label_pattern.match(line):
 	    label_type = decl[1]
 	    label = decl[3]
 	    Dict = data
 	    if label in Dict: raise ValueError(
 	      f"Label '{label}' already declared before line {line_no}.")
+	    print(f'{label = } at line {line_no}')
 	    Dict[label] = (label_type, {})
 	    head_label = ''
 
@@ -106,16 +114,18 @@ for line_no, line in enumerate(infile, 1):
 	    Dict = data[head_label][1]
 	    if func in Dict: raise ValueError(
 	      f"Function '{func}' already declared before line {line_no}.")
+	    print(f'{func = } at line {line_no} under {head_label}')
 	    Dict[func] = (func_type, {})
 	    head_func = ''
 
 	elif decls:=dec_pattern.finditer(line):
-	  for decl
+	  for decl in decls:
 	    var_type = decl[1]
 	    var = decl[3]
+	    Dict = data[head_label][1][head_func][1]
 	    if var in Dict: raise ValueError(
 	      f"Variable '{var}' already declared before line {line_no}.")
-	    Dict = data[head_label][1][head_func][1]
+	    print(f'{var = } at line {line_no} under {head_label}.{head_func}')
 	    Dict[var] = var_type
 
 	loc += len(line)
