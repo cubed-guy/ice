@@ -62,10 +62,10 @@ token = lambda t: None # do something
 loc = 0
 head_func = ''
 head_label = ''
-for line_no, line in enumerate(infile, 1):
 indent_stack = []
 expect_indent = False
 
+for line_no, line in enumerate(infile, 1):
 	curr_indent = space_pattern.match(line)[0]
 	if curr_indent != ''.join(indent_stack):
 	  indent_diff = curr_indent
