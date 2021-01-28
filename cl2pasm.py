@@ -18,6 +18,9 @@ infile  = open('Example.lua')
 outfile = open(argv[2], 'w')
 # argv[0] is the path of this python file
 
+class dPrinter: __rmatmul__ = (lambda self, other: (print('', other), other)[1])
+d = dPrinter()
+
 ''' ------------------------------PATTERNS-------------------------------- '''
 import re
 
@@ -31,10 +34,10 @@ unit_re = r'[0-8]'	# will add tuples later
 shape_re = r'(\[\d+\]|[0-8])*'
 
 dec_re = fr'({shape_re}{unit_re})({word_re})'
-args_re = fr'\({exp_re} (\s*,\s*{exp_re})*\)'
+args_re = fr'\({exp_re}(\s*,\s*{exp_re})*\)'
 dec_pattern = re.compile(dec_re)
-func_pattern = re.compile(r'^'+dec_re+args_re+':')
-label_pattern = re.compile('#'+dec_re+fr'\({word_re}\)'+':')
+func_pattern = re.compile(r'^'+dec_re+args_re)
+label_pattern = re.compile('#'+dec_re+fr'(\({word_re}\))?'+':')
 
 blank_pattern = re.compile(r'^(--.*)?$')
 
@@ -57,6 +60,7 @@ expect_indent = False
 for line_no, line in enumerate(infile, 1):
 	# ignore blank/commented lines
 	if blank_pattern.match(line): continue
+	print(line_no)
 
 	# INDENTATION
 	curr_indent = space_pattern.match(line)[0]
@@ -78,6 +82,8 @@ for line_no, line in enumerate(infile, 1):
 		raise IndentationError(f'expected indent block at line {line_no}')
 	elif not expect_indent and level_diff > 0:
 		raise IndentationError(f'unexpected indent block at line {line_no}')
+
+	line = line.strip()
 	expect_indent = not bool(blank_pattern.match(line.partition(':')[2]))
 
 	if level_diff < 0:	# if dedent
@@ -85,7 +91,7 @@ for line_no, line in enumerate(infile, 1):
 		elif head_label and level == 1: head_func = ''
 
 	# UPDATE DICT
-	if   decl:=label_pattern.match(line):
+	if   decl:=label_pattern.match(line)@d:
 	    label_type = decl[1]
 	    label = decl[3]
 	    Dict = data
@@ -93,28 +99,32 @@ for line_no, line in enumerate(infile, 1):
 	      f"Label '{label}' already declared before line {line_no}.")
 	    print(f'{label = } at line {line_no}')
 	    Dict[label] = (label_type, {})
-	    head_label = ''
+	    head_label = label
 
-	elif decl:=func_pattern.match(line):
+	elif decl:=func_pattern.match(line)@d:
 	    func_type = decl[1]
 	    func = decl[3]
 	    Dict = data[head_label][1]
 	    if func in Dict: raise ValueError(
 	      f"Function '{func}' already declared before line {line_no}.")
-	    print(f'{func = } at line {line_no} under {head_label}')
+	    print(' '*level+f'{func = } at line {line_no} under {head_label!r}')
 	    Dict[func] = (func_type, {})
-	    head_func = ''
+	    head_func = func
 
-	elif decls:=dec_pattern.finditer(line):
-	  for decl in decls:
+	else:
+	  line = line.partition('--')[0]
+	  words = line.split()
+	  for word in words:
+	    if not (decl := dec_pattern.match(word)): continue
 	    var_type = decl[1]
 	    var = decl[3]
 	    Dict = data[head_label][1][head_func][1]
 	    if var in Dict: raise ValueError(
 	      f"Variable '{var}' already declared before line {line_no}.")
-	    print(f'{var = } at line {line_no} under {head_label}.{head_func}')
+	    print(' '*level+f'{var = } at line {line_no} under {head_label!r}->{head_func!r}')
 	    Dict[var] = var_type
 
+	print()
 	loc += len(line)
 
 print(data)
