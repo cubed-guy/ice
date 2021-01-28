@@ -10,11 +10,9 @@ Pass 2 - method substitution (including __data_definition__ methods)
 '''
 
 from sys import argv
-# if   len(argv) <2: raise ValueError('Input file not specified')
-# elif len(argv)==2: argv.append('a.pasm')
-if len(argv)==1: argv.extend(['', 'a.pasm'])
-# infile  = open(argv[1])
-infile  = open('Example.lua')
+if   len(argv) <2: raise ValueError('Input file not specified')
+elif len(argv)==2: argv.append('a.pasm')
+infile  = open(argv[1])
 outfile = open(argv[2], 'w')
 # argv[0] is the path of this python file
 
@@ -60,7 +58,6 @@ expect_indent = False
 for line_no, line in enumerate(infile, 1):
 	# ignore blank/commented lines
 	if blank_pattern.match(line): continue
-	print(line_no)
 
 	# INDENTATION
 	curr_indent = space_pattern.match(line)[0]
@@ -91,7 +88,7 @@ for line_no, line in enumerate(infile, 1):
 		elif head_label and level == 1: head_func = ''
 
 	# UPDATE DICT
-	if   decl:=label_pattern.match(line)@d:
+	if   decl:=label_pattern.match(line):
 	    label_type = decl[1]
 	    label = decl[3]
 	    Dict = data
@@ -101,7 +98,7 @@ for line_no, line in enumerate(infile, 1):
 	    Dict[label] = (label_type, {})
 	    head_label = label
 
-	elif decl:=func_pattern.match(line)@d:
+	elif decl:=func_pattern.match(line):
 	    func_type = decl[1]
 	    func = decl[3]
 	    Dict = data[head_label][1]
@@ -115,7 +112,8 @@ for line_no, line in enumerate(infile, 1):
 	  line = line.partition('--')[0]
 	  words = line.split()
 	  for word in words:
-	    if not (decl := dec_pattern.match(word)): continue
+	    decl = dec_pattern.match(word)
+	    if not (decl): continue
 	    var_type = decl[1]
 	    var = decl[3]
 	    Dict = data[head_label][1][head_func][1]
@@ -124,7 +122,6 @@ for line_no, line in enumerate(infile, 1):
 	    print(' '*level+f'{var = } at line {line_no} under {head_label!r}->{head_func!r}')
 	    Dict[var] = var_type
 
-	print()
 	loc += len(line)
 
 print(data)
