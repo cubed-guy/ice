@@ -66,6 +66,7 @@ indent_stack = []
 expect_indent = False
 
 for line_no, line in enumerate(infile, 1):
+	# INDENTATION
 	curr_indent = space_pattern.match(line)[0]
 	if curr_indent != ''.join(indent_stack):
 	  indent_diff = curr_indent
@@ -85,37 +86,37 @@ for line_no, line in enumerate(infile, 1):
 		raise IndentationError('unexpected indent block.')
 	expect_indent = bool(blank_pattern.match(line.partition(':')[2]))
 
-	func_head_match  =  func_pattern.match(line)
-	if func_head_match:
-		data[label_head]
-	else:
-		label_head_match = label_pattern.match(line)
+	if level_diff < 0:	# if dedent
+		level = len(indent_stack)
+		if not level: head_func = head_label = ''
+		elif head_label and level == 1: head_func = ''
 
 	if   decl:=label_pattern.match(line):
-		label_type = decl[1]
-		label = decl[3]
-		Dict = data
-		if label in Dict: raise ValueError(
-			f"Label '{label}' already declared before line {line_no}.")
-		Dict[label] = (label_type, {})
-		head_label = ''
+	    label_type = decl[1]
+	    label = decl[3]
+	    Dict = data
+	    if label in Dict: raise ValueError(
+	      f"Label '{label}' already declared before line {line_no}.")
+	    Dict[label] = (label_type, {})
+	    head_label = ''
 
 	elif decl:=func_pattern.match(line):
-		func_type = decl[1]
-		func = decl[3]
-		Dict = data[head_label][1]
-		if func in Dict: raise ValueError(
-			f"Function '{func}' already declared before line {line_no}.")
-		Dict[func] = (func_type, {})
-		head_func = ''
+	    func_type = decl[1]
+	    func = decl[3]
+	    Dict = data[head_label][1]
+	    if func in Dict: raise ValueError(
+	      f"Function '{func}' already declared before line {line_no}.")
+	    Dict[func] = (func_type, {})
+	    head_func = ''
 
-	elif decl:=dec_pattern.match(line):
-		var_type = decl[1]
-		var = decl[3]
-		if var in Dict: raise ValueError(
-			f"Variable '{var}' already declared before line {line_no}.")
-		Dict = data[head_label][1][head_func][1]
-		Dict[var] = var_type
+	elif decls:=dec_pattern.finditer(line):
+	  for decl
+	    var_type = decl[1]
+	    var = decl[3]
+	    if var in Dict: raise ValueError(
+	      f"Variable '{var}' already declared before line {line_no}.")
+	    Dict = data[head_label][1][head_func][1]
+	    Dict[var] = var_type
 
 	loc += len(line)
 
