@@ -10,9 +10,11 @@ Pass 2 - method substitution (including __data_definition__ methods)
 '''
 
 from sys import argv
-if   len(argv) <2: raise ValueError('Input file not specified')
-elif len(argv)==2: argv.append('a.pasm')
-infile  = open(argv[1])
+# if   len(argv) <2: raise ValueError('Input file not specified')
+# elif len(argv)==2: argv.append('a.pasm')
+if len(argv)==1: argv.extend(['', 'a.pasm'])
+# infile  = open(argv[1])
+infile  = open('Example.lua')
 outfile = open(argv[2], 'w')
 # argv[0] is the path of this python file
 
@@ -22,6 +24,7 @@ import re
 space_pattern = re.compile(r'\s+')
 word_re = r'[\w_][\w\d_]*'
 word_pattern = re.compile(word_re)
+space_pattern = re.compile(r'\s*')
 exp_re = fr'(\d*|{word_re})'	# only identifiers and numbers for now
 
 unit_re = r'[0-8]'	# will add tuples later
@@ -48,58 +51,69 @@ meth_indent = ''	# indentation level of method header
 loc = 0
 head_func = ''
 head_label = ''
+indent_stack = []
+expect_indent = False
+
 for line_no, line in enumerate(infile, 1):
 	# ignore blank/commented lines
 	if blank_pattern.match(line): continue
 
-	# indent right under label
-	if head_label and not meth_indent:
-		indent_groups = space_pattern.match(line)
-		if indent_groups: indent = meth_indent = indent_groups[0]
+	# INDENTATION
+	curr_indent = space_pattern.match(line)[0]
+	if curr_indent != ''.join(indent_stack):
+	  indent_diff = curr_indent
+	  for level, indent in enumerate(indent_stack):
+	    if indent_diff.startswith(indent):	# consistent indentation so far
+	      indent_diff = indent_diff[len(indent):]
+	    elif indent_diff:
+	      raise TabError(f'inconsistent use of tabs and spaces at line {line_no}')
+	    else: break	# dedent
+	  # indent if indent_diff else dedent (if exhausted)
+	  if indent_diff: indent_stack.append(indent_diff); level_diff = 1
+	  else: level_diff = level-len(indent_stack); del indent_stack[level:]
+	else: level_diff = 0
+	level = len(indent_stack)
 
-	elif head_func and 1: pass
+	if expect_indent and level_diff <= 0:
+		raise IndentationError(f'expected indent block at line {line_no}')
+	elif not expect_indent and level_diff > 0:
+		raise IndentationError(f'unexpected indent block at line {line_no}')
+	expect_indent = not bool(blank_pattern.match(line.partition(':')[2]))
 
+	if level_diff < 0:	# if dedent
+		if not level: head_func = head_label = ''
+		elif head_label and level == 1: head_func = ''
 
-	# indent
-	if line.startswith(indent):
-		indent_groups = space_pattern.match(line)
-		if indent_groups: indent = indent_groups[0]
-	# dedent
-	else:
-		curr_indent = re.match(r'\s*', line)[0]
-		if indent.startswith(curr_indent):
-			indent = curr_indent
-			if meth_indent.startswith(indent): head_func = ''
-			if not indent: head_label = ''
-		else: raise TabError('inconsistent use of tabs and spaces.')
-
-
-	# update dicts
+	# UPDATE DICT
 	if   decl:=label_pattern.match(line):
-		label_type = decl[1]
-		label = decl[3]
-		Dict = data
-		if label in Dict: raise ValueError(
-			f"Label '{label}' already declared before line {line_no}.")
-		Dict[label] = (label_type, {})
-		head_label = ''
+	    label_type = decl[1]
+	    label = decl[3]
+	    Dict = data
+	    if label in Dict: raise ValueError(
+	      f"Label '{label}' already declared before line {line_no}.")
+	    print(f'{label = } at line {line_no}')
+	    Dict[label] = (label_type, {})
+	    head_label = ''
 
 	elif decl:=func_pattern.match(line):
-		func_type = decl[1]
-		func = decl[3]
-		Dict = data[head_label][1]
-		if func in Dict: raise ValueError(
-			f"Function '{func}' already declared before line {line_no}.")
-		Dict[func] = (func_type, {})
-		head_func = ''
+	    func_type = decl[1]
+	    func = decl[3]
+	    Dict = data[head_label][1]
+	    if func in Dict: raise ValueError(
+	      f"Function '{func}' already declared before line {line_no}.")
+	    print(f'{func = } at line {line_no} under {head_label}')
+	    Dict[func] = (func_type, {})
+	    head_func = ''
 
-	elif decl:=dec_pattern.match(line):
-		var_type = decl[1]
-		var = decl[3]
-		if var in Dict: raise ValueError(
-			f"Variable '{var}' already declared before line {line_no}.")
-		Dict = data[head_label][1][head_func][1]
-		Dict[var] = var_type
+	elif decls:=dec_pattern.finditer(line):
+	  for decl in decls:
+	    var_type = decl[1]
+	    var = decl[3]
+	    Dict = data[head_label][1][head_func][1]
+	    if var in Dict: raise ValueError(
+	      f"Variable '{var}' already declared before line {line_no}.")
+	    print(f'{var = } at line {line_no} under {head_label}.{head_func}')
+	    Dict[var] = var_type
 
 	loc += len(line)
 
