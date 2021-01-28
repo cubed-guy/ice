@@ -1,7 +1,14 @@
 # This file converts source code to pseudo assembly (pasm)
 # (pasm because I still have to learn assembly)
 
-''' ----------------------------INITIALISATION---------------------------- '''
+'''Outline:
+Pass 1 - dict of variable locations, shapes and sizes
+       - dict of function return shapes and sizes
+Pass 2 - method substitution (including __data_definition__ methods)
+       - assignment substitution
+       - functions and .text section
+'''
+
 from sys import argv
 # if   len(argv) <2: raise ValueError('Input file not specified')
 # elif len(argv)==2: argv.append('a.pasm')
@@ -11,56 +18,35 @@ infile  = open('Example.lua')
 outfile = open(argv[2], 'w')
 # argv[0] is the path of this python file
 
-'''Outline:
-Pass 1 - dict of variable locations, shapes and sizes
-       - dict of function return shapes and sizes
-Pass 2 - method substitution (including __data_definition__ methods)
-       - assignment substitution
-       - functions and .text section
-'''
-
-''' -------------------------------REGEX---------------------------------- '''
+''' ------------------------------PATTERNS-------------------------------- '''
 import re
-# match     Match a regular expression pattern to the beginning of a string.
-# fullmatch Match a regular expression pattern to all of a string.
-# search    Search a string for the presence of a pattern.
-# sub       Substitute occurrences of a pattern found in a string.
-# subn      Same as sub, but also return the number of substitutions made.
-# split     Split a string by the occurrences of a pattern.
-# findall   Find all occurrences of a pattern in a string.
-# finditer  Return an iterator yielding a Match object for each match.
-# compile   Compile a pattern into a Pattern object.
-# purge     Clear the regular expression cache.
-# escape    Backslash all non-alphanumerics in a string.
 
+space_pattern = re.compile(r'\s+')
 word_re = r'[\w_][\w\d_]*'
 word_pattern = re.compile(word_re)
 space_pattern = re.compile(r'\s*')
+exp_re = fr'(\d*|{word_re})'	# only identifiers and numbers for now
 
-# Pass 1
 unit_re = r'[0-8]'	# will add tuples later
 shape_re = r'(\[\d+\]|[0-8])*'
 
-dec_re = f'({shape_re}{unit_re})({word_re})'
+dec_re = fr'({shape_re}{unit_re})({word_re})'
+args_re = fr'\({exp_re} (\s*,\s*{exp_re})*\)'
 dec_pattern = re.compile(dec_re)
-label_pattern = re.compile('#'+dec_re)
-func_pattern  = re.compile(dec_re+':')
+func_pattern = re.compile(r'^'+dec_re+args_re+':')
+label_pattern = re.compile('#'+dec_re+fr'\({word_re}\)'+':')
 
 blank_pattern = re.compile(r'^(--.*)?$')
 
-# Pass 2
-exp_re = fr'(\d*|{word_re})'	# only identifiers and numbers for now
-# allocations will also be method calls
-# other syntax for the __methods__ will be added also
 alloc_re = fr'\[{exp_re}\]+'	# shape and unit alloc later
 alloc_pattern = re.compile(alloc_re+word_re)
 
 '''  -------------------------PASS 1 - CREATING DICTS--------------------- '''
 data = {'': (None, {'':(None, {})})}
 # {label: (label_type, {func: (func_type, {var: var_type})})}
-indent = ''
 
-token = lambda t: None # do something
+indent = ''
+meth_indent = ''	# indentation level of method header
 
 loc = 0
 head_func = ''
@@ -69,6 +55,7 @@ indent_stack = []
 expect_indent = False
 
 for line_no, line in enumerate(infile, 1):
+	# ignore blank/commented lines
 	if blank_pattern.match(line): continue
 
 	# INDENTATION

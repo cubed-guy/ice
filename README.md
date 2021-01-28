@@ -64,13 +64,37 @@ This means that changing the length of a varr will erase its contents, so to kee
 
 There are two types of pointers - full pointers and size pointers.
 
-### Full Pointer
+### Full Pointers
 
 Full pointers associate the `declexp` to the pointed data. The data that is being pointed to will be treated the same as regular data with that `declexp`.
 
 A full pointer is declared with `*` in the `declexp`. A pointer to `[10][10]3guavas` will be `*[10][10]3guavaPointer`. It can also be declared like a varr. Thus, a pointer to `[10][10]3guavas` can also be `*223guavarrPointer`.
 
 A full pointer declared like a varr is actually a varr itself. This means that a full pointer pointing to an array _is_ a varr, and the `declexps` `223` and `*223` mean the same thing.
+
+Since the `*` is also a part of the `declexp`, we can point to pointers too. For example, `**3peach` is a full pointer that points to a full pointer pointing to a byte.
+
+### Size Pointers
+
+Size pointers associate only a size to the pointed data and no `declexp`. They are declared using `^` followed by a digit (0-8) representing the number of bits it uses to store the size of the pointed data. To point to data with size, say 12, you would declare a size pointer as `^2watermelon` as 12 can be represented with 2<sup>2</sup>=4 bits.
+
+This is useful to recursively point to pointers (like in linked lists especially) when you don't know how many pointers will be pointed to or there are just too many. If you wanted to recursively point 80 times to a byte, you would have to have a declaration that looks something like this:
+
+```
+********************************************************************************3watermelon
+```
+
+With size pointers you just need to reserve some space to store the size of a full pointer and point to it.
+
+```
+^2watermelon
+```
+
+
+
+### Ownership
+
+_Some pointers own data_
 
 # Functions
 
