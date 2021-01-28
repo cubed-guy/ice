@@ -63,13 +63,33 @@ loc = 0
 head_func = ''
 head_label = ''
 for line_no, line in enumerate(infile, 1):
-	if blank_pattern.match(line): continue
+indent_stack = []
+expect_indent = False
 
-	if line.startswith(indent): token('INDENT')
+	curr_indent = space_pattern.match(line)[0]
+	if curr_indent != ''.join(indent_stack):
+	  indent_diff = curr_indent
+	  for level, indent in enumerate(indent_stack):
+	    if indent_diff.startswith(indent):	# consistent indentation so far
+	      indent_diff = indent_diff[len(indent):]
+	    elif indent_diff:
+	      raise TabError('inconsistent use of tabs and spaces.')
+	    else: break	# dedent
+	  # indent if indent_diff else dedent (if exhausted)
+	  if indent_diff: indent_stack.append(indent_diff); level_diff = 1
+	  else: level_diff = len(indent_stack)-level; del indent_stack[level:]
+
+	if expect_indent and level_diff <= 0:
+		raise IndentationError('expected indent block.')
+	elif not expect_indent and level_diff > 0:
+		raise IndentationError('unexpected indent block.')
+	expect_indent = bool(blank_pattern.match(line.partition(':')[2]))
+
+	func_head_match  =  func_pattern.match(line)
+	if func_head_match:
+		data[label_head]
 	else:
-		curr_indent = line.match(r'\s*')[0]
-		if indent.startswith(curr_indent): token('DEDENT') #get how many levels
-		else: raise SyntaxError('Inconsistant use of tabs and spaces.')
+		label_head_match = label_pattern.match(line)
 
 	if   decl:=label_pattern.match(line):
 		label_type = decl[1]
