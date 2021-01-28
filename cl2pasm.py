@@ -32,7 +32,7 @@ unit_re = r'[0-8]'	# will add tuples later
 shape_re = r'(\[\d+\]|[0-8])*'
 
 dec_re = fr'({shape_re}{unit_re})({word_re})'
-args_re = fr'\({exp_re}(\s*,\s*{exp_re})*\)'
+args_re = fr'\(({exp_re}(\s*,\s*{exp_re})*)?\)'
 dec_pattern = re.compile(dec_re)
 func_pattern = re.compile(r'^'+dec_re+args_re)
 label_pattern = re.compile('#'+dec_re+fr'(\({word_re}\))?'+':')
