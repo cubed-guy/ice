@@ -1,14 +1,6 @@
 # This file converts source code to pseudo assembly (pasm)
 # (pasm because I still have to learn assembly)
 
-''' ----------------------------INITIALISATION---------------------------- '''
-from sys import argv
-if   len(argv) <2: raise ValueError('Input file not specified')
-elif len(argv)==2: argv.append('a.pasm')
-infile  = open(argv[1])
-outfile = open(argv[2], 'w')
-# argv[0] is the path of this python file
-
 '''Outline:
 Pass 1 - dict of variable locations, shapes and sizes
        - dict of function return shapes and sizes
@@ -17,7 +9,14 @@ Pass 2 - method substitution (including __data_definition__ methods)
        - functions and .text section
 '''
 
-''' -------------------------------REGEX---------------------------------- '''
+from sys import argv
+if   len(argv) <2: raise ValueError('Input file not specified')
+elif len(argv)==2: argv.append('a.pasm')
+infile  = open(argv[1])
+outfile = open(argv[2], 'w')
+# argv[0] is the path of this python file
+
+''' ------------------------------PATTERNS-------------------------------- '''
 import re
 
 space_pattern = re.compile(r'\s+')
