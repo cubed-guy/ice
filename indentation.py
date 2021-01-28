@@ -33,11 +33,19 @@ for line_no, line in enumerate(file, 1):
 	isDedent = indent.startswith(curr_indent)
 
 	if expect_indent:
+<<<<<<< Updated upstream
 		if same_level or isDedent: raise TabError('expected indent block.')
 		indent = curr_indent
 	elif not same_level:
 		if isDedent: indent = curr_indent
 		else: raise TabError('unexpected indent block.')
+=======
+		if same_level or isDedent: raise IndentationError('expected indent block.')
+		indent = curr_indent
+	elif not same_level:
+		if isDedent: indent = curr_indent
+		else: raise IndentationError('unexpected indent block.')
+>>>>>>> Stashed changes
 
 	func_head_match  =  func_pattern.match(line)
 	label_head_match = label_pattern.match(line)
