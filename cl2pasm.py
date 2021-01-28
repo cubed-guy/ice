@@ -28,8 +28,13 @@ exp_re = fr'(\d*|{word_re})'	# only identifiers and numbers for now
 unit_re = r'[0-8]'	# will add tuples later
 shape_re = r'(\[\d+\]|[0-8])*'
 
+<<<<<<< Updated upstream
 dec_re = fr'({shape_re}{unit_re})({word_re})'
 args_re = fr'\({exp_re} (, {exp_re})*\)'
+=======
+dec_re = fr'({shape_re}{unit_re})({word_re})'
+args_re = fr'\({exp_re} (\s*,\s*{exp_re})*\)'
+>>>>>>> Stashed changes
 dec_pattern = re.compile(dec_re)
 func_pattern = re.compile(r'^'+dec_re+args_re+':')
 label_pattern = re.compile('#'+dec_re+fr'\({word_re}\)'+':')
