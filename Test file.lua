@@ -2,9 +2,10 @@
 		-- Here's a comment, but there's some whitespace too. This also, should be ignored.
 
 3newVar
-[2]3newArr
-33newVarr *223guavarrPointer
+[2]3newArr -- inline comment
+
 -- multiple assignments in a line
+33newVarr *223guavarrPointer
 
 #33thisLabel:
 -- test comment

@@ -1,4 +1,4 @@
 {
 	"cmd": ["py", "cl2pasm.py", "$file"],
-	"file_regex": "\"(...*?)\", error in line ([0-9]*)."
+	"file_regex": "\"(...*?)\", error in line ([0-9]*)"
 }
