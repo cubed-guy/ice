@@ -40,9 +40,9 @@
 	-- not yet implemented
 	procedure(self, 2w, 2h, 3val):
 		[w][h]self
-		for x in range(w): -- not sure yet how for should work
+		for 2x in range(w): -- not sure yet how for should work
 			-- now, an inline control block
-			for y in range(h): 3oval = val; self[x][y] = oval
+			for 2y in range(h): 3oval = val; self[x][y] = oval
 	-- Right, the first indentation level under a label head must contain
 	-- only function heads. Need to implement that as well.
 
