@@ -15,7 +15,7 @@
 
 i = y.a()	-- i is now 2 (uses 4 bits, so 0010)
 
-#default y	-- inbuilt label which exists for a variable on init
+#default y	-- inbuilt label which exists for a variable on declaration
 -- now y has the default label
 
 y.a()	-- compile error
