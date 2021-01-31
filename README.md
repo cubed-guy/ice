@@ -36,7 +36,7 @@ This can be done recursively to create multidimensional arrays.
 
 You can access elements of arrays by adding a number after the variable enclosed in square brackets. `apples[2]` will get the third element (indices start from 0) in `apples`.
 
-*The following sections introduce more things to the start of the declaration. We'll refer to what comes before the variable name in a declaration as the "declaration expression" from now (or `declexp` for short). Eg. The `declexp` for `[4][5]6mangoes` is `[4][5]6`.*
+*The following sections introduce more things to the start of the declaration. We'll refer to what comes before the variable name in a declaration as its "shape" from now. Eg. The shape for `[4][5]6mangoes` is `[4][5]6`.*
 
 ## Variable Length Arrays (or as I like to call them: "varrs")
 
@@ -48,7 +48,7 @@ The length is changed by adding a number enclosed in square brackets before the 
 [10]apples
 ```
 
-Since the length can be represented as a 2<sup>v</sup>-bit integer, we can use an integer variable declared as `<v>name` in the brackets. So if `2boxes` was declared, the length of `apples` can be set to `boxes` like so:
+Since the length can be represented as a 2<sup>v</sup>-bit integer, we can use an integer variable with shape `v` in the brackets. So if `2boxes` was declared, the length of `apples` can be set to `boxes` like so:
 
 ```lua
 [boxes]apples
@@ -60,29 +60,27 @@ This means that changing the length of a varr will erase its contents, so to kee
 
 ## Pointers
 
-There are two types of pointers - full pointers and size pointers.
+There are two types of pointers - shape pointers and size pointers.
 
-### Full Pointers
+### Shape Pointers
 
-Full pointers associate the `declexp` to the pointed data. The data that is being pointed to will be treated the same as regular data with that `declexp`.
+Shape pointers associate the shape to the pointed data. The data that is being pointed to will be treated the same as regular data with that shape. It is declared with `*` in the shape. A pointer to `[10][10]3guavas` will be `*[10][10]3guavaPointer`.
 
-A full pointer is declared with `*` in the `declexp`. A pointer to `[10][10]3guavas` will be `*[10][10]3guavaPointer`. It can also be declared like a varr. Thus, a pointer to `[10][10]3guavas` can also be `*223guavarrPointer`.
+A pointer to `[10][10]3guavas` can also be `*223guavarrPointer`. In fact, a varr is a shape pointer, so `223` is the same as `*223`.
 
-A full pointer declared like a varr is actually a varr itself. This means that a full pointer pointing to an array _is_ a varr, and the `declexps` `223` and `*223` mean the same thing.
-
-Since the `*` is also a part of the `declexp`, we can point to pointers too. For example, `**3peach` is a full pointer that points to a full pointer pointing to a byte.
+Since the `*` is also a part of the shape, we can point to pointers too. For example, `**3peach` is a shape pointer that points to a shape pointer pointing to a byte.
 
 ### Size Pointers
 
-Size pointers associate only a size to the pointed data and no `declexp`. They are declared using `^` followed by a digit (0-8) representing the number of bits it uses to store the size of the pointed data. To point to data with size, say 12, you would declare a size pointer as `^2watermelon` as 12 can be represented with 2<sup>2</sup>=4 bits.
+Size pointers associate only a size to the pointed data. They are declared using `^` followed by a digit (0-8) representing the number of bits it uses to store the size of the pointed data. To point to data with size, say 12, you would declare a size pointer as `^2watermelon` since 12 can be represented with 2<sup>2</sup>=4 bits.
 
-This is useful to recursively point to pointers (like in linked lists especially) when you don't know how many pointers will be pointed to or there are just too many. If you wanted to recursively point 80 times to a byte, you would have to have a declaration that looks something like this:
+This is useful to recursively point to pointers (in linked lists for examples) when you don't know how many pointers will be pointed to or there are just too many. If you wanted to recursively point 80 times to a byte, you would have to have a declaration that looks something like this:
 
 ```lua
 ********************************************************************************3watermelon
 ```
 
-With size pointers you just need to reserve some space to store the size of a full pointer and point to it.
+With size pointers you just need to reserve some space to store the size of a pointer and point to it.
 
 ```lua
 ^2watermelon
@@ -90,25 +88,25 @@ With size pointers you just need to reserve some space to store the size of a fu
 
 ### Ownership
 
-Every pointer has an ownership bit. When true, it signifies that the pointer owns the data. This means that when the pointer dereferences the data or goes out of scope, the pointed data is deallocated. In these cases the ownership bit is set to false.
+Every pointer has an ownership bit. When true, the pointer owns the data. This means that when the pointer dereferences the data or goes out of scope, the pointed data gets deallocated. In these cases the ownership bit is set to false.
 
-Ownership can be only transferred from pointer to pointer, but cannot be copied. This is to avoid more than one pointer to own the same data. However, since size pointers don't store the shape data and will blindly assign to pointers along with the ownership bit allowing multiple pointers to own the same data. I don't intend to tackle this problem in the language (though it's quite complicated to achieve it), but rather recommend it to write for good code.
+Ownership can be only transferred from pointer to pointer, but cannot be copied. This is to avoid more than one pointer to own the same data (though there exists a work around, but I won't discuss breaking my language here).
 
 ## Tuples
 
-A tuple is a sequence of items each with a different `declexp`. The syntax for this is to replace the last number of the `declexp` with a sequence of `declexps` enclosed in parentheses.
+A tuple is a sequence of items of different shapes. The syntax for this is to replace the last number of the shape with a sequence of shapes enclosed in parentheses.
 
 ```
 (2, 3)CherryAndBanana
 ```
 
-Since this is also a part of the `declexp` we can nest tuples.
+We can also nest tuples.
 
 ```
-([10]6, (2, 3))AppleBoxes_and_CherryAndBanana
+([10]6, (2, 3))Apples_and_CherryAndBanana
 ```
 
-Elements of a tuple can be accessed like in arrays but only literals are allowed (to make the language _faster_ and to assure the return type).
+Elements of a tuple can be accessed like in arrays but only literals are allowed (to make the language _faster_ and to assure the return shape _(not return type)_ during compile time).
 
 ## Assignments
 
@@ -125,21 +123,21 @@ pointerL -> pointerR -- data pointed by `pointerR` gets data pointed by `pointer
 
 ## Functions
 
-The function header must contain the `declexp` of the return value. If none mentioned, it should not return a value.
+The function header should mention the shape of the return value. If none mentioned, it must not return a value.
 
 ```lua
 3makeJuice(2apple):
 	3juice
 	-- more code
-	return juice -- juice has the same declexp as makeJuice so it's accepted
+	return juice -- juice has the same shape as makeJuice so it's accepted
 ```
 
-_Note: The `declexp` of a variable needs to be mentioned with the variable anywhere at least once in a program. Every `declexp` mentioned for a variable must be the same. If a variable has a `declexp` in a function (including the arguments list), it can be different from what it is outside the function and is used within that function as a local variable._
+_Note: The shape of a variable needs to be mentioned with the variable anywhere at least once in a program. Every shape mentioned for a variable must be the same. If the shape of a variable is mentioned in a function (or its argument list), it will be treated as a local variable and can have a different shape within the function._
 
 ## Labels
 
-The `declexp` is the one aspect of a variable's type, which determines how the data is stored.
+The shape is the one part of a variable's type, which determines how the data is stored.
 
-The label is the other aspect. It determines what the data can do, which is in other words the methods linked to the variable.
+The label is the other part. It determines what the data can do, which is, in other words, the methods linked to the variable.
 
-Unlike object oriented programming, however, where objects are instances of classes, variables with a given label aren't instances of the label. The label for an object can change based on where it is in the code and is not permanently bound to the label. _(this only increases confusion, i shall remove it once i explain how labels work)_
+Unlike object oriented programming, however, where objects are instances of classes, variables with a given label aren't instances of the label. The label for an object can change based on where it is in the code and is not permanently bound to the label. _(this only increases confusion and doesn't add information, i shall remove it once i explain how labels work)_

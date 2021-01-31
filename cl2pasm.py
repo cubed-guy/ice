@@ -10,7 +10,6 @@ Pass 2 - method substitution (including __data_definition__ methods)
 '''
 
 from sys import argv
-# if   len(argv) <2: raise ValueError('Input file not specified')
 if   len(argv) <2: argv.append('Test file.cl')
 # if   len(argv) <2: print('Input file not specified'); quit(1)
 elif len(argv)==2: argv.append('a.pasm')
@@ -65,13 +64,13 @@ def getVars(region, level_ = None):
 			f'{first_arg} of shape {data[head_label][0]}.', sep = '\t')
 		
 	for decl in decls:
-		declexp = decl[1]
+		shape = decl[1]
 		var = decl[3]
 		print(line_no, ' '*level_+#f'under {head_label}.{head_func} 
-			f'{var} of shape {declexp}.', sep = '\t')
-		if var not in Dict: Dict[var] = declexp; continue
-		if Dict[var] != declexp: err('ValueError', "Declaring variable "
-			f"'{var}' with declexp {declexp}. "
+			f'{var} of shape {shape}.', sep = '\t')
+		if var not in Dict: Dict[var] = shape; continue
+		if Dict[var] != shape: err('ValueError', "Declaring variable "
+			f"'{var}' with shape {shape}. "
 			f"(Already declared with {Dict[var]})")
 
 data = {'': (None, {'':(None, {})}, None)}
@@ -122,29 +121,29 @@ for line_no, line in enumerate(infile, 1):
 
 	# UPDATE DICT
 	if   decl:=label_pattern.match(line):
-		declexp = decl[1]
+		shape = decl[1]
 		label = decl[3]
 		Dict = data
 		print(line_no, ' '*level+#f'under {head_label}.{head_func} '
-			f'#{label} of shape {declexp}', sep = '\t', end = ' ')
+			f'#{label} of shape {shape}', sep = '\t', end = ' ')
 		if label in Dict:err('ValueError',f"Label '{label}' already declared.")
 		
 		parent = decl['parent']
 		if parent: parent = parent[1:-1]
 		else: parent = None
 		print(f"extends {parent!r}.")
-		Dict[label] = (declexp, {}, parent)
+		Dict[label] = (shape, {}, parent)
 		head_label = label
 
 	elif decl:=func_pattern.match(line):
-		declexp = decl[1]
+		shape = decl[1]
 		func = decl[3]
 		Dict = data[head_label][1]
 		print(line_no, ' '*level+#f'under {head_label}.{head_func} '
-			f'{func}() of shape {declexp}', sep = '\t')
+			f'{func}() of shape {shape}', sep = '\t')
 		if func in Dict: err('ValueError', f"Function '{func}' already declared.")
 		
-		Dict[func] = (declexp, {})
+		Dict[func] = (shape, {})
 		head_func = func
 		args = decl['args']
 		getVars(args, level+1)
