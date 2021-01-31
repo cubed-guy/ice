@@ -94,7 +94,26 @@ With size pointers you just need to reserve some space to store the size of a fu
 
 ### Ownership
 
-_Some pointers own data_
+Every pointer has an ownership bit. When true, it signifies that the pointer owns the data. This means that when the pointer dereferences the data or goes out of scope, the pointed data is deallocated. In these cases the ownership bit is set to false.
+
+Ownership can be only transferred from pointer to pointer, but cannot be copied. This is to avoid more than one pointer to own data. This is possible, however, by using size pointers as they don't store the shape data and thus will blindly assign to pointers along with the ownership bit allowing multiple pointers to own the same data. I don't intend to tackle this problem in the language, but rather recommend it to write for good code.
+
+## Tuples
+
+_There are units which may be complex and called 'tuples'_
+
+## Assignments
+
+Here is the place-holder syntax for the different types of assignments:
+
+```lua
+varL = varR          -- `varL` gets data of `varR`
+varL = pointerR      -- `varL` gets data pointed by `pointerR`
+pointerL = varR      -- `pointerL` points to `varR`
+pointerL = pointerR  -- `pointerL` points to data pointed by `pointerR`
+pointerL := pointerR -- `pointerL` points to data pointed by `pointerR` and is its new owner if `pointerR` was
+pointerL -> pointerR -- data pointed by `pointerR` gets data pointed by `pointerL`
+```
 
 # Functions
 
