@@ -1,4 +1,4 @@
-# Cool Lang <sub><sup>(placeholder name)</sup></sub>
+# Cool Lang <sub><sup>(placeholder name, [help](https://github.com/cubed-guy/cool-lang/discussions/6))</sup></sub>
 
 The language has been designed to have a one-to-one relation with assembly code for maximum performance, while still providing features to make it easy to code.
 
