@@ -1,5 +1,4 @@
-# This file converts source code to pseudo assembly (pasm)
-# (pasm because I still have to learn assembly)
+# This file extracts the shapes of every variable in each function and method
 
 '''Outline:
 Pass 1 - dict of variable locations, shapes and sizes
