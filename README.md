@@ -8,7 +8,7 @@ To maintain performance and the one-to-one relation with assembly, labels are no
 
 I've also borrowed the data definition methods (aka `__dunder__` methods) and the indentation from Python, because that's what makes Python great (and that I am primarily a Python programmer).
 
-Note that, unlike a class in Python or C++, the label is not the type of a variable. You may say the type *comprises* of the label and is only the label. Apart from defining how the data interacts with everything, we also need to define how it is stored. Here's that aspect of the data type.
+Note that, unlike a class in Python or C++, the label is not the type of a variable. You may say the type *comprises* of the label but is not limited to the label. Apart from defining how the data interacts with everything, we also need to define how it is stored. These sections describe the other part of the type.
 
 ## Integers
 

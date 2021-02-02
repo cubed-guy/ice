@@ -10,7 +10,7 @@ Pass 2 - method substitution (including __data_definition__ methods)
 
 from sys import argv
 # if len(argv) <2: print('Input file not specified'); quit(1)
-if len(argv)<2: argv.append('Test file.cl')
+if len(argv)<2: argv.append('Examples/Test file.cl')
 if len(argv)<3: argv.append('a.pasm')
 infile  = open(argv[1])
 # argv[0] is the path of this python file
