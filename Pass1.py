@@ -51,10 +51,17 @@ class Patterns:
 	func  = re.compile(ident_re+fr'(?P<args>{head_args_re})')
 	label = re.compile('#'+decl_re+fr'(?P<parent>\({word_re}\))?'+':')
 
+	shape_delim = fr'(?([\[*]|\^?\d))'
+
 	alloc_re = fr'\[{exp_re}\]+'	# shape and unit alloc later
 	alloc = re.compile(alloc_re+word_re)
 
 '''  -------------------------PASS 1 - CREATING DICTS--------------------- '''
+class VarMeta:
+	def __init__(self, shape, label_stack):
+		self.shape = shape
+		self.label_stack = label_stack
+
 def getVars(region, level_ = None):
 	Dict = data[head_label][1][head_func][1]
 	
@@ -73,10 +80,10 @@ def getVars(region, level_ = None):
 		var = decl[3]
 		dprint(line_no, ' '*level_+#f'under {head_label}.{head_func} 
 			f'{var} of shape {shape}.', sep = '\t')
-		if var not in Dict: Dict[var] = (shape, []); continue
+		if var not in Dict: Dict[var] = VarMeta(shape, []); continue
 		if Dict[var] != shape: err('ValueError', "Declaring variable "
 			f"'{var}' with shape {shape}. "
-			f"(Already declared with {Dict[var][0]})")
+			f"(Already declared with {Dict[var].shape})")
 
 data = {'': (None, {'':(None, {})}, None)}
 # {label:
@@ -131,9 +138,9 @@ for line_no, line in enumerate(infile, 1):
 		shape = decl[1]
 		label = decl[3]
 		Dict = data
-		dprint(line_no, ' '*level+#f'under {head_label}.{head_func} '
-			f'#{label} of shape {shape}', sep = '\t', end = ' ')
-		if label in Dict:err('ValueError',f"Label '{label}' already declared.")
+		dprint(line_no, ' '*level+f'#{label} with {shape = }', sep = '\t', end = ' ')
+		if label in Dict:
+			err('ValueError',f"Label '{label}' already declared.")
 		
 		parent = decl['parent']
 		if parent: parent = parent[1:-1]
@@ -146,9 +153,9 @@ for line_no, line in enumerate(infile, 1):
 		shape = decl[1]
 		func = decl[3]
 		Dict = data[head_label][1]
-		dprint(line_no, ' '*level+#f'under {head_label}.{head_func} '
-			f'{func}() of shape {shape}', sep = '\t')
-		if func in Dict: err('ValueError', f"Function '{func}' already declared.")
+		dprint(line_no, ' '*level+f'{func}() with {shape = }', sep = '\t')
+		if func in Dict:
+			err('ValueError', f"Function '{func}' already declared.")
 		
 		Dict[func] = (shape, {})
 		head_func = func
