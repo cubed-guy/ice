@@ -23,11 +23,15 @@ class dPrinter:
 d = dPrinter()
 
 def err(Error, message = None):
-	print(f'File "{argv[1]}", line {line_no}')
+	print(f'File "{argv[1]}", line {Global.line_no}')
 	print('\t'+line.strip())
 	if message is None: print(Error)
 	else: print(Error, message, sep = ': ')
 	quit(1)
+
+class Global:
+	def __init__(self, line_no, line):
+		Global.line_no, Global.line = line_no, line
 
 ''' ------------------------------PATTERNS-------------------------------- '''
 import re
@@ -36,24 +40,28 @@ class Patterns:
 	word_re = r'[a-zA-Z_][a-zA-Z\d_]*'
 	word = re.compile(word_re)
 	space = re.compile(r'\s*')
-	exp_re = fr'(\d*|{word_re})'	# only identifiers and numbers for now
 
-	unit_re = r'[0-8]'	# will add tuples later
+	unit_re  = r'\^?[0-8]'	# will add tuples later
 	shape_re = r'\*?(\[\d+\]|[0-8])*?'
 
-	decl_re = fr'({shape_re}{unit_re})({word_re})'
+	decl_re  = fr'({shape_re}{unit_re})({word_re})'
 	ident_re = fr'({shape_re}{unit_re})?({word_re})'
-	args_re = fr'\(({exp_re}(\s*,\s*{exp_re})*)?\)'
-	head_args_re = (fr'\(((?P<first>{ident_re})(\s*,\s*{ident_re})*)?\)')
-	head_args = re.compile(head_args_re)
+	token_re = fr'(\d+|{ident_re})'
+	
 	decl  = re.compile(decl_re)
 	ident = re.compile(ident_re)
+	token = re.compile(token_re)
+
+	args_re = fr'\(({token_re}(\s*,\s*{token_re})*)?\)'
+	head_args_re = (fr'\(((?P<first>{ident_re})(\s*,\s*{ident_re})*)?\)')
+
+	head_args = re.compile(head_args_re)
 	func  = re.compile(ident_re+fr'(?P<args>{head_args_re})')
 	label = re.compile('#'+decl_re+fr'(?P<parent>\({word_re}\))?'+':')
 
-	shape_delim = fr'(?([\[*]|\^?\d))'
+	dim = re.compile(r'(\*?\d|\[\d+\])(?!\w)')
 
-	alloc_re = fr'\[{exp_re}\]+'	# shape and unit alloc later
+	alloc_re = fr'\[{token_re}\]+'	# shape and unit alloc later
 	alloc = re.compile(alloc_re+word_re)
 
 '''  -------------------------PASS 1 - CREATING DICTS--------------------- '''
@@ -66,19 +74,18 @@ def getVars(region, level_ = None):
 	Dict = data[head_label][1][head_func][1]
 	
 	if level_ is None: level_ = level
-	decls = Patterns.decl.finditer(region)
 	args = Patterns.head_args.match(region)
 	if args:
-		first_arg = args["first"]
+		first_arg = args['first']
 		if head_label:
 			Dict[first_arg] = (data[head_label][0], [])
-			dprint(line_no, ' '*level_+#f'under {head_label}.{head_func} '
-			f'{first_arg} of shape {data[head_label][0]}.', sep = '\t')
+			dprint(n, ' '*level_ +
+				f'{first_arg} of shape {data[head_label][0]}.', sep = '\t')
 		
-	for decl in decls:
+	for decl in Patterns.decl.finditer(region):
 		shape = decl[1]
 		var = decl[3]
-		dprint(line_no, ' '*level_+#f'under {head_label}.{head_func} 
+		dprint(n, ' '*level_+#f'under {head_label}.{head_func} 
 			f'{var} of shape {shape}.', sep = '\t')
 		if var not in Dict: Dict[var] = VarMeta(shape, []); continue
 		if Dict[var] != shape: err('ValueError', "Declaring variable "
@@ -97,7 +104,8 @@ head_label = ''
 indent_stack = []
 expect_indent = False
 
-for line_no, line in enumerate(infile, 1):
+for n, line in enumerate(infile, 1):
+	Global((n, line))
 	# ignore comment
 	# TODO: don't ignore '--' if in string
 	line = line[:-1].partition('--')[0]
@@ -138,7 +146,7 @@ for line_no, line in enumerate(infile, 1):
 		shape = decl[1]
 		label = decl[3]
 		Dict = data
-		dprint(line_no, ' '*level+f'#{label} with {shape = }', sep = '\t', end = ' ')
+		dprint(n, ' '*level+f'#{label} with {shape = }', sep = '\t', end = ' ')
 		if label in Dict:
 			err('ValueError',f"Label '{label}' already declared.")
 		
@@ -153,7 +161,7 @@ for line_no, line in enumerate(infile, 1):
 		shape = decl[1]
 		func = decl[3]
 		Dict = data[head_label][1]
-		dprint(line_no, ' '*level+f'{func}() with {shape = }', sep = '\t')
+		dprint(n, ' '*level+f'{func}() with {shape = }', sep = '\t')
 		if func in Dict:
 			err('ValueError', f"Function '{func}' already declared.")
 		
