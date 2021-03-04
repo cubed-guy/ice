@@ -1,11 +1,8 @@
-# This file extracts the shapes of every variable in each function and method
-
-'''Outline:
-Pass 1 - dict of variable locations, shapes and sizes
-       - dict of function return shapes and sizes
-Pass 2 - method substitution (including __data_definition__ methods)
-       - assignment substitution
-       - functions and .text section
+'''
+Pass1.py - What can we get from the first pass?
+	- return types
+	- expressions (maybe save the variable names as numbers in a dict)
+	- infer types and give errors when it doesn't match
 '''
 
 from sys import argv
@@ -30,7 +27,7 @@ def err(Error, message = None):
 	quit(1)
 
 class Global:
-	def __init__(self, line_no, line):
+	def __new__(cls, line_no, line):
 		Global.line_no, Global.line = line_no, line
 
 ''' ------------------------------PATTERNS-------------------------------- '''
@@ -69,6 +66,7 @@ class VarMeta:
 	def __init__(self, shape, label_stack):
 		self.shape = shape
 		self.label_stack = label_stack
+	def __repr__(self): return f'VarMeta({self.shape}, {self.label_stack})'
 
 def getVars(region, level_ = None):
 	Dict = data[head_label][1][head_func][1]
@@ -103,15 +101,13 @@ head_func = ''
 head_label = ''
 indent_stack = []
 expect_indent = False
+no_indent = False
 
 for n, line in enumerate(infile, 1):
-	Global((n, line))
-	# ignore comment
-	# TODO: don't ignore '--' if in string
-	line = line[:-1].partition('--')[0]
-
 	# ignore blank lines
 	if not line or line.isspace(): continue
+	
+	Global(n, line)
 
 	# INDENTATION
 	curr_indent = Patterns.space.match(line)[0]
