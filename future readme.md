@@ -1,10 +1,10 @@
 # Ice
 
-Ice is a compiled language with pythonic code blocks. The fundamental data structures are unsigned integers, static and dynamic arrays, typed and void pointers and structs.
+Ice is a compiled language with pythonic code blocks and some unique features.
 
 ## Basic types
 
-The type of a variable is stated with type prefixes as below.
+The type of a variable is stated with type prefixes as below. The fundamental data structures are unsigned integers, static and dynamic arrays, typed and void pointers and structs.
 
 1. **Integers**: An integer is prefixed with a digit `0-6`. The integer will use the number of bits equal to two raised to the power of the prefixed number.
 	
@@ -20,13 +20,14 @@ The type of a variable is stated with type prefixes as below.
 	
 2. **Static Arrays**: The integer size prefix can be prefixed with a number enclosed in square brackets to declare a static array of that length. You can prefix this similarly many times to create multidimensional arrays.
      ![](doc_images/array_declaration.png)
+*an array of 56 16-bit integers called `this`*
 
 3. **Dynamic arrays**: Using a digit `0-6` instead of the enclosed number makes it a dynamic array. The digit refers to the size of the integer used to store the length of the array (similar to the number of bits used for an integer using the integer size prefix)
 
-4. **Typed pointers**: *(Look. 99.9% of all the code I've written is in python. So if I do something stupid with pointers and stuff, don't laugh)*
-     Prefixing this sequence of digits and brackets with an asterisk makes it a pointer (`*[56]4that`). Dynamic arrays are always pointers and they store the address along with the array length. The compiler knows the type information and is not stored during run-time.
+4. **Typed pointers**: *(Look. 99.9% of all the code I've ever written is in python; I might do some stupid things with pointers and stuff. Don't laugh)*
+     Prefixing this sequence of digits and brackets with an asterisk makes it a pointer (eg. `*[56]4that`). Dynamic arrays are always pointers and they store the address along with the array length. The compiler knows the type information, which is not stored during run-time.
 
-5. **Void Pointers**: Prefixing the integer size prefix with a carat `^` makes it a void pointer that stores the size and the address of the data pointed to.
+5. **Void Pointers**: Prefixing the integer size prefix with a caret `^` makes it a void pointer that stores the size and the address of the data pointed to.
 
 6. **Structs**: Replacing the integer size prefix with comma separated type prefixes enclosed within parenthesis makes a struct. *(i might make it so you can name the fields of a struct)*
 
@@ -51,4 +52,6 @@ pointerL -> pointerR -- data pointed by `pointerR` gets data pointed by `pointer
 
 ## Labels
 
-A label is compile-time metadata of a variable which tells the compiler the methods of a variable. This introduces an object-oriented aspect with absolutely no sacrifice in run-time performance.
+A label is a collection of methods. A variable gets associated with a label during compile time. This introduces an object-oriented aspect with absolutely no sacrifice in run-time performance.
+
+Also, since it's associated during compile-time, it can change throughout the code; a variable can have a label in one place in the code and a different label somewhere else.
