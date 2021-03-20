@@ -54,4 +54,4 @@ def get_shape(word):
 
 for line in enumerate(infile, 1):
 	Global(line)
-	if not Patterns.token.match(line): err('SyntaxError', 'expected token.')
+	if not Patterns.token.match(line): err(SyntaxError, 'expected token.')

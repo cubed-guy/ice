@@ -22,8 +22,8 @@ d = dPrinter()
 def err(Error, message = None):
 	print(f'File "{argv[1]}", line {Global.line_no}')
 	print('\t'+line.strip())
-	if message is None: print(Error)
-	else: print(Error, message, sep = ': ')
+	if message is None: print(Error.__name__)
+	else: print(Error.__name__, message, sep = ': ')
 	quit(1)
 
 class Global:
@@ -86,7 +86,7 @@ def getVars(region, level_ = None):
 		dprint(n, ' '*level_+#f'under {head_label}.{head_func} 
 			f'{var} of shape {shape}.', sep = '\t')
 		if var not in Dict: Dict[var] = VarMeta(shape, []); continue
-		if Dict[var] != shape: err('ValueError', "Declaring variable "
+		if Dict[var] != shape: err(ValueError 'Declaring variable '
 			f"'{var}' with shape {shape}. "
 			f"(Already declared with {Dict[var].shape})")
 
@@ -116,7 +116,7 @@ for n, line in enumerate(infile, 1):
 	  for level, indent in enumerate(indent_stack):
 	    if indent_diff.startswith(indent):	# consistent indentation so far
 	      indent_diff = indent_diff[len(indent):]
-	    elif indent_diff:err('TabError','inconsistent use of tabs and spaces.')
+	    elif indent_diff: err(TabError, 'inconsistent use of tabs and spaces.')
 	    else: break	# dedent
 	  # indent if indent_diff else dedent
 	  if indent_diff: indent_stack.append(indent_diff); level_diff = 1
@@ -125,9 +125,9 @@ for n, line in enumerate(infile, 1):
 	level = len(indent_stack)
 
 	if expect_indent and level_diff <= 0:
-		err('IndentationError', 'expected indent block.')
+		err(IndentationError, 'expected indent block.')
 	elif not expect_indent and level_diff > 0:
-		err('IndentationError', 'unexpected indent block.')
+		err(IndentationError, 'unexpected indent block.')
 
 	line = line.strip()
 	parts = line.partition(':')
@@ -143,8 +143,7 @@ for n, line in enumerate(infile, 1):
 		label = decl[3]
 		Dict = data
 		dprint(n, ' '*level+f'#{label} with {shape = }', sep = '\t', end = ' ')
-		if label in Dict:
-			err('ValueError',f"Label '{label}' already declared.")
+		if label in Dict: err(ValueError, f"Label '{label}' already declared.")
 		
 		parent = decl['parent']
 		if parent: parent = parent[1:-1]
@@ -158,8 +157,7 @@ for n, line in enumerate(infile, 1):
 		func = decl[3]
 		Dict = data[head_label][1]
 		dprint(n, ' '*level+f'{func}() with {shape = }', sep = '\t')
-		if func in Dict:
-			err('ValueError', f"Function '{func}' already declared.")
+		if func in Dict:err(ValueError, f"Function '{func}' already declared.")
 		
 		Dict[func] = (shape, {})
 		head_func = func
@@ -167,7 +165,7 @@ for n, line in enumerate(infile, 1):
 		getVars(args, level+1)
 		getVars(line.partition(':')[2])
 
-	elif line.count(':') > 1: err('SyntaxError', 'invalid syntax.')
+	elif line.count(':') > 1: err(SyntaxError, 'invalid syntax.')
 
 	else: getVars(line)
 
