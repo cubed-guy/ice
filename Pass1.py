@@ -38,6 +38,10 @@ class Patterns:
 	word = re.compile(word_re)
 	space = re.compile(r'\s*')
 
+	string1_re = r'\'(\\\'|.)*?\''
+	string2_re = r'\"(\\\"|.)*?\"'
+	string = re.compile(string1_re+'|'string2_re)
+
 	unit_re  = r'\^?[0-8]'	# will add tuples later
 	shape_re = r'\*?(\[\d+\]|[0-8])*?'
 
@@ -63,28 +67,40 @@ class Patterns:
 
 '''  -------------------------PASS 1 - CREATING DICTS--------------------- '''
 class VarMeta:
+	def __repr__(self): return f'VarMeta({self.shape}, {self.label_stack})'
 	def __init__(self, shape, label_stack):
 		self.shape = shape
 		self.label_stack = label_stack
-	def __repr__(self): return f'VarMeta({self.shape}, {self.label_stack})'
 
 def getVars(region, level_ = None):
 	Dict = data[head_label][1][head_func][1]
 	
-	if level_ is None: level_ = level
-	args = Patterns.head_args.match(region)
-	if args:
-		first_arg = args['first']
-		if head_label:
-			Dict[first_arg] = (data[head_label][0], [])
-			dprint(n, ' '*level_ +
-				f'{first_arg} of shape {data[head_label][0]}.', sep = '\t')
-		
+	if ismodule:
+	  if level_ is None: level_ = level
+	  args = Patterns.head_args.match(region)
+	  if args:
+	    first_arg = args['first']
+	    if head_label:
+	    	Dict[first_arg] = (data[head_label][0], [])
+	    	dprint(n, ' '*level_ +
+	    		f'{first_arg} of shape {data[head_label][0]}.', sep = '\t')
+
+	str_spans = [string.span() for string in Patterns.string.finditer(region)]
+	curr_span = str_spans[0]
+	span_number = 0
+
 	for decl in Patterns.decl.finditer(region):
+		while curr_span[-1] < decl.span()[-1]:
+			if span_number >= len(str_spans)-1:
+			   span_number  = len(str_spans)-1; break
+			span_number += 1
+			curr_span = str_spans[span_number]
+		else:
+			if curr_span[0] < decl.span()[0]: continue
+
 		shape = decl[1]
-		var = decl[3]
-		dprint(n, ' '*level_+#f'under {head_label}.{head_func} 
-			f'{var} of shape {shape}.', sep = '\t')
+		var   = decl[3]
+		dprint(n, ' '*level_ + f'{var} of shape {shape}.', sep = '\t')
 		if var not in Dict: Dict[var] = VarMeta(shape, []); continue
 		if Dict[var] != shape: err(ValueError 'Declaring variable '
 			f"'{var}' with shape {shape}. "
@@ -102,12 +118,31 @@ head_label = ''
 indent_stack = []
 expect_indent = False
 no_indent = False
+quote = ''
 
 for n, line in enumerate(infile, 1):
-	# ignore blank lines
-	if not line or line.isspace(): continue
-	
 	Global(n, line)
+
+	# ignore comments outside strings
+	escape = False
+	cStart = False
+	isblank = True
+	for pos, c in enumerate(line):
+		if quote:
+			if not escape:
+				if c == '\\': escape = True
+				elif c == quote: quote = ''
+		elif c in '"\'': quote = c; isblank = False
+		elif c == '-':
+			if cStart: break
+			else: cStart = True
+		else:
+			if isblank and not c.isspace(): isblank = False
+			cStart = False
+	if quote and not escape: err(SyntaxError, 'EOL while parsing string.')
+	if isblank: continue	# ignore blank lines
+
+	line = line[:pos-2]
 
 	# INDENTATION
 	curr_indent = Patterns.space.match(line)[0]
