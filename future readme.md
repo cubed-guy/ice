@@ -31,6 +31,8 @@ The type of a variable is stated with type prefixes as below. The fundamental da
 
 6. **Structs**: Replacing the integer size prefix with comma separated type prefixes enclosed within parenthesis makes a struct. *(i might make it so you can name the fields of a struct)*
 
+Variables can be declared one or more times anywhere in a scope (which is different inside and outside functions). The type in all the declarations must match.
+
 ### Ownership of pointers
 
 Every pointer has an ownership bit which tells whether it owns the data. If a pointer that owns data goes out of scope, the pointed data is dereferenced. Also, when an owning pointer is assigned different data, the owned data is also dereferenced.
@@ -50,8 +52,22 @@ pointerL := pointerR -- `pointerL` points to the data `pointerR` points to and o
 pointerL -> pointerR -- data pointed by `pointerR` gets data pointed by `pointerL`
 ```
 
+## Functions
+
+Functions are defined with headers similar to variable declarations.
+
+```lua
+[56]4get_this(43string, 3chr):
+	-- some code
+```
+
+Omit the type prefix if there is no return type.
+
+The arguments are part of the function scope; they can be declared in the header or the body.
+
 ## Labels
 
 A label is a collection of methods. A variable gets associated with a label during compile time. This introduces an object-oriented aspect with absolutely no sacrifice in run-time performance.
 
 Also, since it's associated during compile-time, it can change throughout the code; a variable can have a label in one place in the code and a different label somewhere else.
+
