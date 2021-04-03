@@ -1,38 +1,6 @@
-'''
-Pass1.py - What can we get from the first pass?
-	- return types
-	- expressions (maybe save the variable names as numbers in a dict)
-	- infer types and give errors when it doesn't match
-'''
+# Pass 1 converts the source file to an intermediate format
 
-from sys import argv
-# if len(argv) <2: print('Input file not specified'); quit(1)
-if len(argv)<2: argv.append('Examples/Test file.cl')
-if len(argv)<3: argv.append('a.pasm')
-infile  = open(argv[1])
-# argv[0] is the path of this python file
-
-ismodule = __name__ != '__main__'
-dprint = (lambda *args, **kwargs: None) if ismodule else print
-class dPrinter:
-	if ismodule: __rmatmul__ = lambda self, other: other
-	else: __rmatmul__ = lambda self, other: (print('', other), other)[1]
-d = dPrinter()
-
-def err(Error, message = None):
-	print(f'File "{argv[1]}", line {Global.line_no}')
-	print('\t'+line.strip())
-	if message is None: print(Error.__name__)
-	else: print(Error.__name__, message, sep = ': ')
-	quit(1)
-
-class Global:
-	def __new__(cls, line_no, line):
-		Global.line_no, Global.line = line_no, line
-
-''' ------------------------------PATTERNS-------------------------------- '''
 import re
-
 class Patterns:
 	word_re = r'[a-zA-Z_][a-zA-Z\d_]*'
 	word = re.compile(word_re)
@@ -65,7 +33,33 @@ class Patterns:
 	alloc_re = fr'\[{token_re}\]+'	# shape and unit alloc later
 	alloc = re.compile(alloc_re+word_re)
 
-'''  -------------------------PASS 1 - CREATING DICTS--------------------- '''
+
+from sys import argv
+# if len(argv) <2: print('Input file not specified'); quit(1)
+if len(argv)<2: argv.append('Examples/Test file.cl')
+if len(argv)<3: argv.append('a.pasm')
+if len(argv)<4: argv.append('a.temp') #intermediate file?
+
+ismodule = __name__ != '__main__'
+dprint = (lambda *args, **kwargs: None) if ismodule else print
+
+def err(Error, message = None):
+	print(f'File "{argv[1]}", line {Global.line_no}')
+	print('\t'+line.strip())
+	if message is None: print(Error.__name__)
+	else: print(Error.__name__, message, sep = ': ')
+	quit(1)
+
+class Global:
+	infile  = open(argv[1])
+	outfile = open(argv[3], 'w')
+	def __new__(cls, line_no, line):
+		Global.line_no, Global.line = line_no, line
+
+# def output(*args, file = Global.outfile, **kwargs): print(*args, file = file, **kwargs)
+output = print
+
+
 class VarMeta:
 	def __repr__(self): return f'VarMeta({self.shape}, {self.label_stack})'
 	def __init__(self, shape, label_stack):

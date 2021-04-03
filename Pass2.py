@@ -1,13 +1,11 @@
-# This file converts source code to pseudo assembly (pasm)
-# (pasm because I still have to learn assembly)
-# This is pass 2 and uses data extracted during pass 1
+# Pass 2 converts the intermediate code to pseudo assembly (pasm)
+# (pseudo because I still have to learn actual assembly)
 
 from Pass1 import Global, err, argv, infile
 from Pass1 import data, Patterns
 
-# outfile = open(argv[2], 'w')
-# def output(*args, file = outfile, **kwargs): print(*args, file = file, **kwargs)
-output = print
+Global.infile  = open(argv[3])
+Global.outfile = open(argv[2], 'w')
 
 head_label = head_func = ''
 def varDict(): return data[head_label][1][head_func][1]
