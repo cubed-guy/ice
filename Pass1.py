@@ -106,65 +106,69 @@ data = {'': (None, {'':(None, {})}, None)}
 # 	{func: (func_type, {var: (var_type, label_stack)})},
 # 	parent)}
 
-loc = 0
-head_func = ''
-head_label = ''
-indent_stack = []
+cont  = False
+instr = False
+indent_stack  = []
 expect_indent = False
-no_indent = False
-quote = ''
+head_func  = ''
+head_label = ''
 
 for n, line in enumerate(infile, 1):
 	Global(n, line)
+	if cont: contd, cont = True, False
+	else: contd = False
 
-	# ignore comments outside strings
-	escape = False
-	cStart = False
+	cmFirst = False
 	isblank = True
 	for pos, c in enumerate(line):
-		if quote:
-			if not escape:
-				if c == '\\': escape = True
-				elif c == quote: quote = ''
-		elif c in '"\'': quote = c; isblank = False
-		elif c == '-':
-			if cStart: break
-			else: cStart = True
-		else:
-			if isblank and not c.isspace(): isblank = False
-			cStart = False
-	if quote and not escape: err(SyntaxError, 'EOL while parsing string.')
+		cmChar = c == '-'
+		isComment = cmChar and cmFirst
+		if cont and not (instr or isComment or c.isspace()): err(SyntaxError,
+			'Unexpected character after line continuation character')
+
+		if instr:
+			if cont: cont = False
+			elif c == quote: instr = False
+		elif isComment: break
+		elif cmChar: cmFirst = True
+		elif c in '"\'': quote = c; instr = True; isblank = False
+		elif isblank and not c.isspace(): isblank = False
+		else: cmFirst = False
+
+		cont = c == '\\'
+
+	if instr and not cont: err(SyntaxError, 'EOL while parsing string.')
 	if isblank: continue	# ignore blank lines
 
 	line = line[:pos-2]
 
-	# INDENTATION
-	curr_indent = Patterns.space.match(line)[0]
-	if curr_indent != ''.join(indent_stack):
-	  indent_diff = curr_indent
-	  for level, indent in enumerate(indent_stack):
-	    if indent_diff.startswith(indent):	# consistent indentation so far
-	      indent_diff = indent_diff[len(indent):]
-	    elif indent_diff: err(TabError, 'inconsistent use of tabs and spaces.')
-	    else: break	# dedent
-	  # indent if indent_diff else dedent
-	  if indent_diff: indent_stack.append(indent_diff); level_diff = 1
-	  else: level_diff = level-len(indent_stack); del indent_stack[level:]
-	else: level_diff = 0
-	level = len(indent_stack)
+	if not contd: # INDENTATION
+		curr_indent = Patterns.space.match(line)[0]
+		if curr_indent != ''.join(indent_stack):
+		  indent_diff = curr_indent
+		  for level, indent in enumerate(indent_stack):
+		    if indent_diff.startswith(indent):
+		      indent_diff = indent_diff[len(indent):]
+		    elif indent_diff:
+		      err(TabError, 'inconsistent use of tabs and spaces.')
+		    else: break
+		  if indent_diff: indent_stack.append(indent_diff); level_diff = 1
+		  else: level_diff = level-len(indent_stack); del indent_stack[level:]
+		else: level_diff = 0
+		level = len(indent_stack)
 
-	if expect_indent and level_diff <= 0:
-		err(IndentationError, 'expected indent block.')
-	elif not expect_indent and level_diff > 0:
-		err(IndentationError, 'unexpected indent block.')
+		if expect_indent and level_diff <= 0:
+			err(IndentationError, 'expected indent block.')
+		elif not expect_indent and level_diff > 0:
+			err(IndentationError, 'unexpected indent block.')
+
+		if level_diff < 0:	# if dedent
+			if not level: head_func = head_label = ''
+			elif head_label and level == 1: head_func = ''
 
 	line = line.strip()
 	parts = line.partition(':')
 	expect_indent = parts[1] and (not parts[2] or parts[2].isspace())
-
-	if level_diff < 0:	# if dedent
-		if not level: head_func = head_label = ''
-		elif head_label and level == 1: head_func = ''
 
 	# UPDATE DICT
 	if   decl:=Patterns.label.match(line):
@@ -194,11 +198,9 @@ for n, line in enumerate(infile, 1):
 		getVars(args, level+1)
 		getVars(line.partition(':')[2])
 
-	elif line.count(':') > 1: err(SyntaxError, 'invalid syntax.')
-
 	else: getVars(line)
 
-	loc += len(line)
+Global.outfile.close()
 
 if ismodule: print('Pass 1 successful'); infile.seek(0)
 else:
