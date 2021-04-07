@@ -8,7 +8,7 @@ class Patterns:
 
 	string1_re = r'\'(\\\'|.)*?\''
 	string2_re = r'\"(\\\"|.)*?\"'
-	string = re.compile(string1_re+'|'string2_re)
+	string = re.compile(string1_re+'|'+string2_re)
 
 	unit_re  = r'\^?[0-8]'	# will add tuples later
 	shape_re = r'\*?(\[\d+\]|[0-8])*?'
@@ -36,7 +36,7 @@ class Patterns:
 
 from sys import argv
 # if len(argv) <2: print('Input file not specified'); quit(1)
-if len(argv)<2: argv.append('Examples/Test file.cl')
+if len(argv)<2: argv.append('Examples/Test file.ice')
 if len(argv)<3: argv.append('a.pasm')
 if len(argv)<4: argv.append('a.temp') #intermediate file?
 
@@ -59,6 +59,10 @@ class Global:
 # def output(*args, file = Global.outfile, **kwargs): print(*args, file = file, **kwargs)
 output = print
 
+def checkExists(name, head_label = None, head_func = None):
+	if name in data: err(ValueError, f'Label {name} already defined.')
+	if name in data[''][1]:
+		err(ValueError, f'Function {name} already defined.')
 
 class VarMeta:
 	def __repr__(self): return f'VarMeta({self.shape}, {self.label_stack})'
@@ -80,7 +84,8 @@ def getVars(region, level_ = None):
 	    		f'{first_arg} of shape {data[head_label][0]}.', sep = '\t')
 
 	str_spans = [string.span() for string in Patterns.string.finditer(region)]
-	curr_span = str_spans[0]
+	if str_spans: curr_span = str_spans[0]
+	else: curr_span = (0, 0)
 	span_number = 0
 
 	for decl in Patterns.decl.finditer(region):
@@ -94,9 +99,11 @@ def getVars(region, level_ = None):
 
 		shape = decl[1]
 		var   = decl[3]
-		dprint(n, ' '*level_ + f'{var} of shape {shape}.', sep = '\t')
+		checkExists(var)
+		if ismodule:
+			dprint(n, ' '*level_ + f'{var} of shape {shape}.', sep = '\t')
 		if var not in Dict: Dict[var] = VarMeta(shape, []); continue
-		if Dict[var] != shape: err(ValueError 'Declaring variable '
+		if Dict[var] != shape: err(ValueError, 'Declaring variable '
 			f"'{var}' with shape {shape}. "
 			f"(Already declared with {Dict[var].shape})")
 
@@ -113,7 +120,7 @@ expect_indent = False
 head_func  = ''
 head_label = ''
 
-for n, line in enumerate(infile, 1):
+for n, line in enumerate(Global.infile, 1):
 	Global(n, line)
 	if cont: contd, cont = True, False
 	else: contd = False
@@ -176,7 +183,7 @@ for n, line in enumerate(infile, 1):
 		label = decl[3]
 		Dict = data
 		dprint(n, ' '*level+f'#{label} with {shape = }', sep = '\t', end = ' ')
-		if label in Dict: err(ValueError, f"Label '{label}' already declared.")
+		checkExists(label)
 		
 		parent = decl['parent']
 		if parent: parent = parent[1:-1]
@@ -190,7 +197,7 @@ for n, line in enumerate(infile, 1):
 		func = decl[3]
 		Dict = data[head_label][1]
 		dprint(n, ' '*level+f'{func}() with {shape = }', sep = '\t')
-		if func in Dict:err(ValueError, f"Function '{func}' already declared.")
+		checkExists()
 		
 		Dict[func] = (shape, {})
 		head_func = func
