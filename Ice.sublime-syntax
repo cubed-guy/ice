@@ -1,0 +1,130 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - ice
+scope: source.ice
+
+variables:
+  punctuation: '[\[\\\]()\.,:;]'
+  operator: '[-+*/%&|~^<=>]|!='
+  shape_symbols: '[*^\[\]\d]'
+  keyword: |-
+    \b(?x:if|else|elif|for|while
+    |return|break|continue|pass)\b
+
+
+contexts:
+  # The prototype context is prepended to all contexts but those setting
+  # meta_include_prototype: false.
+  prototype:
+    - include: comments
+
+  main:
+    # The main context is the initial starting point of our syntax.
+    # Include other contexts from here (or specify them directly).
+
+    # - include: unit
+    - include: keywords
+    - include: function
+    - include: numbers
+    - include: strings
+    - include: labels
+    - match: ({{punctuation}})
+      scope: punctuation.ice
+    - match: ({{operator}})
+      scope: keyword.operator.ice
+
+  unit:
+    - match: \d(?=[a-zA-Z_])
+      scope: storage.size.ice
+
+  symbols:
+    # - include: unit
+    - match: \d
+      scope: constant.numeric.ice
+    - match: ({{shape_symbols}})
+      scope: punctuation.shape-symbol.ice
+
+  labels:
+    - match: ^\s*(@)(?={{shape_symbols}}*\w+[^:]*$)
+      scope: punctuation.label.ice
+      push:
+        - include: symbols
+        - match: \w+
+          scope: entity.name.tag.ice
+        - match: \b
+          pop: true
+    - match: ^\s*(@)(?={{shape_symbols}}*\w+.*:)
+      scope: entity.punctuation.label.ice
+      push:
+        - include: symbols
+        - match: \w+
+          scope: entity.name.label.ice
+        - match: \b
+          pop: true
+
+  function:
+    - match: ^\s*(?={{shape_symbols}}*\w+\(.*\):)
+      push:
+        - include: symbols
+        - match: \w+
+          scope: entity.name.function.ice
+        - match: \b
+          pop: true
+
+  keywords:
+    - match: ({{keyword}})
+      scope: keyword.control.ice
+    - match: '\b(in|or|and|not)\b'
+      scope: keyword.operator.ice
+    - match: '\b(print|len|range)'
+      scope: support.function.builtin.ice
+
+  numbers:
+    - match: '\b[0-9]+'
+      scope: constant.numeric.ice
+
+  strings:
+    # Strings begin and end with quotes, and use backslashes as an escape
+    # character.
+    - match: "'"
+      scope: punctuation.definition.string.begin.ice
+      push: inside_string1
+    - match: '"'
+      scope: punctuation.definition.string.begin.ice
+      push: inside_string2
+
+  inside_string1:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.ice
+    - match: '\\.'
+      scope: constant.character.escape.ice
+    - match: \n
+      scope: invalid.illegal.string-eol
+      pop: true
+    - match: "'"
+      scope: punctuation.definition.string.end.ice
+      pop: true
+
+  inside_string2:
+    - meta_include_prototype: false
+    - meta_scope: string.quoted.double.ice
+    - match: '\.'
+      scope: constant.character.escape.ice
+    - match: \n
+      scope: invalid.illegal.string-eol
+      pop: true
+    - match: '"'
+      scope: punctuation.definition.string.end.ice
+      pop: true
+
+  comments:
+    # Comments begin with a '#' and finish at the end of the line.
+    - match: '#'
+      scope: punctuation.definition.comment.ice
+      push:
+        # This is an anonymous context push for brevity.
+        - meta_scope: comment.line.double-slash.ice
+        - match: $\n?
+          pop: true

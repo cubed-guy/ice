@@ -3,5 +3,6 @@
 *.sublime-workspace
 *.swp
 __pycache__
+archive
 *.temp
 *.pasm
