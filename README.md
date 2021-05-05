@@ -37,28 +37,28 @@ Variables can be declared one or more times anywhere in a scope (which is differ
 
 Every pointer has an ownership bit which tells whether it owns the data. If a pointer that owns data goes out of scope, the pointed data is dereferenced. Also, when an owning pointer is assigned different data, the owned data is also dereferenced.
 
-Ownership only can be *transferred* from pointer to pointer, and not copied. This makes pointers unique owners. (There exists a workaround though, but why would I share methods of causing unintended behaviour.)
+Ownership only can be *transferred* from pointer to pointer, and not copied. This makes pointers unique owners. (There exists a workaround, but I won't tell you how to break a language I made.)
 
 ### Assignments
 
 Here is the place-holder syntax for the different types of assignments:
 
-```lua
-varL = varR          -- `varL` gets the data of `varR`
-varL = pointerR      -- `varL` gets the data `pointerR` points to
-pointerL = varR      -- `pointerL` points to `varR`
-pointerL = pointerR  -- `pointerL` points to the data `pointerR` points to
-pointerL := pointerR -- `pointerL` points to the data `pointerR` points to and ownership is transferred
-pointerL -> pointerR -- data pointed by `pointerR` gets data pointed by `pointerL`
+```python
+varL = varR          # `varL` gets the data of `varR`
+varL = pointerR      # `varL` gets the data `pointerR` points to
+pointerL = varR      # `pointerL` points to `varR`
+pointerL = pointerR  # `pointerL` points to the data `pointerR` points to
+pointerL := pointerR # `pointerL` points to the data `pointerR` points to and ownership is transferred
+pointerL -> pointerR # data pointed by `pointerR` gets data pointed by `pointerL`
 ```
 
 ## Functions
 
 Functions are defined with headers similar to variable declarations.
 
-```lua
+```python
 [56]4get_this(43string, 3chr):
-	-- some code
+	# some code
 ```
 
 Omit the type prefix if there is no return type.
@@ -71,3 +71,28 @@ A label is a collection of methods. A variable gets associated with a label duri
 
 Also, since it's associated during compile-time, it can change throughout the code; a variable can have a label in one place in the code and a different label somewhere else.
 
+A label is created using the `@` symbol followed by the shape of the variables you want to use with the label. Then you add the label name and a colon for a code block. All the methods for the label will go into the code block.
+
+Take an example of a label `slippery` for variables of the shape `4`.
+
+```python
+@4slippery:
+	slip(self):
+		# There are built-in functions. Just like in python.
+		print(self)
+		print('Oh no the value just slipped into the screen!')
+```
+
+A label is assigned to a variable like how variables are declared in C or C++, but with the `@` symbol. Remember, variables don't have to be declared with a label. You can assign labels to variables. A variable can have a label in one part of your code and another in another part.
+
+```
+4guava = 34	# declaring a variable of shape `4`
+
+@slippery guava	# the label has been assigned
+
+guava.slip()	# the slip method of the slippery label is called for guava
+```
+
+Just like in python, the object is passed in as the `self` argument in the method. The above method call is equivalent to `@slippery.slip(guava)` directly calling the method of the label and passing the self argument explicitly.
+
+Refer [the test file](Examples/Test%20file.ice) for syntax examples.
