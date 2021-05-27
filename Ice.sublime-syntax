@@ -7,24 +7,18 @@ scope: source.ice
 
 variables:
   punctuation: '[\[\\\]()\.,:;]'
-  operator: '[-+*/%&|~^<=>]|!='
-  shape_symbols: '[*^\[\]\d]'
+  operator: '(?:[-+*/%&|~^<=>]|!=)'
+  shape_symbols: '(?:[*^\d()]|\[\d+\])'
   keyword: |-
     \b(?x:if|else|elif|for|while
     |return|break|continue|pass)\b
 
 
 contexts:
-  # The prototype context is prepended to all contexts but those setting
-  # meta_include_prototype: false.
   prototype:
     - include: comments
 
   main:
-    # The main context is the initial starting point of our syntax.
-    # Include other contexts from here (or specify them directly).
-
-    # - include: unit
     - include: keywords
     - include: function
     - include: numbers
@@ -35,14 +29,7 @@ contexts:
     - match: ({{operator}})
       scope: keyword.operator.ice
 
-  unit:
-    - match: \d(?=[a-zA-Z_])
-      scope: storage.size.ice
-
   symbols:
-    # - include: unit
-    - match: \d
-      scope: constant.numeric.ice
     - match: ({{shape_symbols}})
       scope: punctuation.shape-symbol.ice
 
@@ -56,7 +43,7 @@ contexts:
         - match: \b
           pop: true
     - match: ^\s*(@)(?={{shape_symbols}}*\w+.*:)
-      scope: entity.punctuation.label.ice
+      scope: punctuation.definition.label.ice
       push:
         - include: symbols
         - match: \w+
@@ -86,45 +73,24 @@ contexts:
       scope: constant.numeric.ice
 
   strings:
-    # Strings begin and end with quotes, and use backslashes as an escape
-    # character.
-    - match: "'"
+    - match: ("|')
       scope: punctuation.definition.string.begin.ice
-      push: inside_string1
-    - match: '"'
-      scope: punctuation.definition.string.begin.ice
-      push: inside_string2
-
-  inside_string1:
-    - meta_include_prototype: false
-    - meta_scope: string.quoted.double.ice
-    - match: '\\.'
-      scope: constant.character.escape.ice
-    - match: \n
-      scope: invalid.illegal.string-eol
-      pop: true
-    - match: "'"
-      scope: punctuation.definition.string.end.ice
-      pop: true
-
-  inside_string2:
-    - meta_include_prototype: false
-    - meta_scope: string.quoted.double.ice
-    - match: '\.'
-      scope: constant.character.escape.ice
-    - match: \n
-      scope: invalid.illegal.string-eol
-      pop: true
-    - match: '"'
-      scope: punctuation.definition.string.end.ice
-      pop: true
+      push:
+      - meta_include_prototype: false
+      - meta_content_scope: string.quoted.ice
+      - match: '\\.'
+        scope: constant.character.escape.ice
+      - match: \n
+        scope: invalid.illegal.string-eol
+        pop: true
+      - match: \1
+        scope: punctuation.definition.string.end.ice
+        pop: true
 
   comments:
-    # Comments begin with a '#' and finish at the end of the line.
     - match: '#'
       scope: punctuation.definition.comment.ice
       push:
-        # This is an anonymous context push for brevity.
-        - meta_scope: comment.line.double-slash.ice
+        - meta_scope: comment.line.hash.ice
         - match: $\n?
           pop: true
