@@ -1,4 +1,5 @@
 {
-	"cmd": ["py", "Pass2.py", "$file"],
-	"file_regex": "File \"(...*?)\", line ([0-9]+)"
+	"cmd": ["py", "base.py", "$file"],
+	"file_regex": "File \"(...*?)\", line ([0-9]+)",
+	"selector": "source.ice"
 }
