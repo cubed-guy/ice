@@ -1,21 +1,33 @@
-; no op var
-mov dest, var
+global _
+segment .bss
+var: resq 1
+arg1: resb 1
+arg2: resb 1
+arg3: resb 1
+arg: resq 1
+dest: resq 1
 
+segment .text
+_:
+mov qword dest, qword var
+
+; dest = var.meth()
 push var
 call meth
 add esp, 4
-mov dest, eax
+mov qword dest, eax
 
-push arg1
-push arg2
-push arg3
-push func
-call __call__
-add esp, 16
-mov dest, eax
+; dest = func(arg1, arg2, arg3)
+push byte arg1
+push byte arg2
+push byte arg3
+call func
+add esp, 12
+mov qword dest, eax
 
-push arg
+; dest = var + arg
+push qword arg
 push var
 call __add__
 add esp, 8
-mov dest, eax
+mov qword dest, eax
