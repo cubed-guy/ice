@@ -30,13 +30,11 @@ def update_shapes(size, word):
 
 def with_size(var):
 	if var not in shapes: err(f'ValueError: {var!r} is not declared.')
-	return size_list[int(shapes[var])]+' '+var
+	return f'{size_list[int(shapes[var])]} [{var}]'
 
 def isdecl(token): return token[:1].isdigit()
 
-def split_type(token):
-	if not token: return 0, ''
-	return int(token[:1]), token[1:]
+def split_type(token): return token[:1], token[1:]
 
 indexed_sizes = 'bbbbwdq'	# byte for size <= 8, word = 16, double word = 32, quad ...
 size_list = ['byte', 'byte', 'byte', 'byte', 'word', 'dword', 'qword']
@@ -56,7 +54,6 @@ for line_no, line in enumerate(infile, 1):
 		if not token or token.isspace(): continue
 
 		if isdecl(token):
-			print(line_no, 'DECLARING', token)
 			size, var = split_type(token)
 			update_shapes(size, var)
 			decls.append((size, var))
@@ -129,7 +126,7 @@ for line_no, line in enumerate(infile, 1):
 	offset = len(args)*4
 	if op == '__call__': output('call', subject)
 	else:
-		output('push', subject)
+		output('push', with_size(subject))
 		output('call', op)
 		offset += 4
 	output('add esp,', offset)
