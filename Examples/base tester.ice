@@ -1,8 +1,8 @@
-6var 3arg1 3arg2 3arg3 6arg
+5var 5arg
 
-6dest = var
-dest = var.meth()
+5dest = var - arg
 
-dest = func(arg1, arg2, arg3)
+3h 3i
+3sum = h+i
 
-dest = var + arg
+print(sum)

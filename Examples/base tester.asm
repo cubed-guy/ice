@@ -1,33 +1,34 @@
+extern _printf
 global _
+
+segment .data
+_p: db '%d', 0
+
 segment .bss
-var: resq 1
-arg1: resb 1
-arg2: resb 1
-arg3: resb 1
-arg: resq 1
-dest: resq 1
+var: resd 1
+arg: resd 1
+dest: resd 1
+h: resb 1
+i: resb 1
+sum: resb 1
 
 segment .text
 _:
-mov qword [dest], qword [var]
 
-; dest = var.meth()
-push qword [var]
-call meth
-add esp, 4
-mov qword [dest], eax
+; 5dest = var - arg
+mov eax, dword [var]
+sub eax, dword [arg]
+mov dword [dest], eax
 
-; dest = func(arg1, arg2, arg3)
-push byte [arg1]
-push byte [arg2]
-push byte [arg3]
-call func
-add esp, 12
-mov qword [dest], eax
+; 3sum = h+i
+mov al, byte [h]
+add al, byte [i]
+mov byte [sum], al
 
-; dest = var + arg
-push qword [arg]
-push qword [var]
-call __add__
+; print(sum)
+mov eax, 0
+xor al, byte [sum]
+push eax
+push _p
+call _printf
 add esp, 8
-mov qword [dest], eax

@@ -1,0 +1,22 @@
+; _u_dadd
+mov %0r, %0
+add %1r, %1
+;
+
+; _u_dsub
+mov %0r, %0
+sub %1r, %1
+;
+
+; _u_dmul
+mov %0r, %0
+mul %1
+;
+
+; print
+mov eax, 0
+xor %1r, %1
+push eax
+push _p
+call _printf
+add esp, 8
