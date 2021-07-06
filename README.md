@@ -14,6 +14,7 @@ These are the features in order:
 - [ ] Basic expressions and assignments\
     *"var", "function(args)", "var.method(args)", "var op var"*
     - [x] Parse expressions
+    - [x] Parse declarations
     - [x] Builtin functions
     - [ ] Integer literals
 - [ ] Array literals
