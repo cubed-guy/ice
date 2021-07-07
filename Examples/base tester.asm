@@ -2,7 +2,7 @@ extern _printf
 global _
 
 segment .data
-_p: db '%d', 0
+_p: db `%d\n`, 0
 
 segment .bss
 var: resd 1
@@ -20,14 +20,20 @@ mov eax, dword [var]
 sub eax, dword [arg]
 mov dword [dest], eax
 
+; h = 9
+mov byte [h], 9
+
+; i = 246
+mov byte [i], 246
+
 ; 3sum = h+i
-mov al, byte [h]
-add al, byte [i]
-mov byte [sum], al
+mov  al, byte [h]
+add  al, byte [i]
+mov byte [sum],  al
 
 ; print(sum)
 mov eax, 0
-xor al, byte [sum]
+xor  al, byte [sum]
 push eax
 push _p
 call _printf

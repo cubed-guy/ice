@@ -16,10 +16,10 @@ These are the features in order:
     - [x] Parse expressions
     - [x] Parse declarations
     - [x] Builtin functions
-    - [ ] Integer literals
+    - [x] Integer literals
 - [ ] Array literals
 - [ ] String literals
-- [ ] Control flow statements
+- [ ] Control flow statements\
    *It'll be Turing Complete here*
 - [ ] Functions
 - [ ] Labels (definitions and assignments)
