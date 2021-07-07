@@ -88,16 +88,17 @@ class Variable:
 		return f'Variable({self.shape+self.name})'
 variables = {}	# formerly the `shapes` dict
 
-indexed_sizes = 'bbbbwdq'	# byte if size <= 8, word if 16 ...
+# byte if size <= 8, word if 16 ...
+indexed_sizes = 'bbbbwdq'
 size_list = ['byte', 'byte', 'byte', 'byte', 'word', 'dword', 'qword']
 reg_list  = [' l', ' l', ' l', ' l', ' x', 'ex', 'rx']
 
 output(
 	'extern _printf',
-	'global _',
+	'global _main',
 
 	'\nsegment .data',
-	r'_p: db `%d\n`, 0',
+	r'_p: db `%u\n`, 0',
 
 	'\nsegment .bss',
 sep = '\n')
@@ -160,11 +161,11 @@ macros = {line[2:-1]: line_no for line_no, line in enumerate(mfile)
 # starts at a line starting with '; ' (mind the space)
 # ends at a line with just ';' (refer builtin method part)
 
-print('BUILT-INS:', *macros)
+print('BUILTINS: ', *macros)
 
 infile.seek(0)
 output('\nsegment .text')
-output('_:')
+output('_main:')
 for line_no, line in enumerate(infile, 1):
 	decl = True
 	subject = ''

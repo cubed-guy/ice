@@ -1,8 +1,8 @@
 extern _printf
-global _
+global _main
 
 segment .data
-_p: db `%d\n`, 0
+_p: db `%u\n`, 0
 
 segment .bss
 var: resd 1
@@ -13,7 +13,10 @@ i: resb 1
 sum: resb 1
 
 segment .text
-_:
+_main:
+
+; arg = 355
+mov dword [arg], 355
 
 ; 5dest = var - arg
 mov eax, dword [var]
@@ -34,6 +37,14 @@ mov byte [sum],  al
 ; print(sum)
 mov eax, 0
 xor  al, byte [sum]
+push eax
+push _p
+call _printf
+add esp, 8
+
+; print(dest)
+mov eax, 0
+xor eax, dword [dest]
 push eax
 push _p
 call _printf
