@@ -12,7 +12,7 @@ Refer [this test file](Examples/Test%20file.ice) for some syntax examples.
 The goal is to be able to compile from source to binary after the addition of each feature.\
 These are the features in order:
 - [ ] Basic expressions and assignments\
-    *"var", "function(args)", "var.method(args)", "var op var"*
+    *`var`, `function(args)`, `var.method(args)`, `var op var`*
     - [x] Parse expressions
     - [x] Parse declarations
     - [x] Builtin functions
@@ -20,6 +20,7 @@ These are the features in order:
 - [ ] Array literals
 - [ ] String literals
 - [ ] Control flow statements
+   *It'll be Turing Complete here*
 - [ ] Functions
 - [ ] Labels (definitions and assignments)
 - [ ] Advanced expressions\
